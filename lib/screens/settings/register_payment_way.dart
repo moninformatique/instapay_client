@@ -243,10 +243,10 @@ class _PaymentWayState extends State<PaymentWay> {
 
       if (response.statusCode == 200) {
         debugPrint("enregistrement du moyen de paiement éffectué");
-        openDialog("succès", true);
+        openDialog("Enregistremment éffectué", true);
       } else {
         debugPrint("l'enregistrement à échoué");
-        openDialog("echec", false);
+        openDialog("Enregistrement échoué", false);
       }
     } catch (e) {
       debugPrint("@@@@@@@@@@@@@ une exception est survenue");

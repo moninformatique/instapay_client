@@ -36,7 +36,7 @@ class _PaymentState extends State<Payment> {
     return Scaffold(
       appBar: appBar(context),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal),
+        padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal / 2),
         child: Expanded(
           child: Column(
             children: [

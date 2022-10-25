@@ -1,9 +1,13 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:http/http.dart';
 import 'package:instapay_client/components/constants.dart';
 
+import '../payment/sendmoney/send_money.dart';
 import '../transactions/transactions_summary.dart';
 import 'qrcode_container.dart';
 
@@ -69,7 +73,7 @@ class _HomeState extends State<Home> {
     return Container(
       padding: const EdgeInsets.all(8),
       //margin: const EdgeInsets.symmetric(horizontal: defaultPadding),
-      height: 200,
+      height: 180,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         color: InstaColors.primary,
@@ -140,22 +144,26 @@ class _HomeState extends State<Home> {
                   IconButton(
                     tooltip: "Scanner un QR code",
                     onPressed: () async {
-                      /*
                       debugPrint("Scanner un QR code");
                       String response = await FlutterBarcodeScanner.scanBarcode(
                           '#ffffff', 'Quitter', true, ScanMode.QR);
-                      debugPrint(response);
-                      */
-                      /*Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SendMoney(
-                                    balance: (widget.balance == balance)
-                                        ? widget.balance
-                                        : balance,
-                                    tokens: tokens,
-                                    receiptEmail: response,
-                                  )));*/
+                      debugPrint(
+                          "Resultat scann : $response (${response.runtimeType}) ");
+
+                      if (response != "-1") {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SendMoney(
+                                      balance: (widget.balance == balance)
+                                          ? widget.balance
+                                          : balance,
+                                      receiptEmail: response,
+                                      token: widget.token,
+                                    )));
+                      } else {
+                        debugPrint("Aucun Scann éffectué");
+                      }
                     },
                     icon: const Icon(
                       Icons.qr_code_scanner,

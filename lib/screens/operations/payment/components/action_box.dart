@@ -52,10 +52,12 @@ class ActionBox extends StatelessWidget {
                     color: color,
                   )),
               const SizedBox(height: 15),
-              Text(
-                title,
-                style: TextStyle(
-                    color: color, fontSize: 12, fontWeight: FontWeight.w600),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                      color: color, fontSize: 10, fontWeight: FontWeight.w600),
+                ),
               )
             ],
           )),

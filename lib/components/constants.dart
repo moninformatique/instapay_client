@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 String logoPath = "assets/logos/4-rb.png";
 List<Map<String, dynamic>> providers = [
   {"id": 1, "name": "Instapay", "imagepath": "assets/logos/4-rb.png"},
+  {"id": 2, "name": "MTN Mobile Money", "imagepath": "assets/images/mtn.jpeg"},
   {
-    "id": 2,
+    "id": 3,
     "name": "Orange Mobile Money",
     "imagepath": "assets/images/orange.png"
   },
-  {"id": 3, "name": "MTN Mobile Money", "imagepath": "assets/images/mtn.jpeg"},
   {"id": 4, "name": "Moov Mobile Money", "imagepath": "assets/images/moov.png"}
 ];
 

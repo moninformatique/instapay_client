@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 
-import 'package:intl/intl.dart';
 
 import '../../../../components/constants.dart';
 import '../components/accounting.dart';
@@ -72,72 +71,6 @@ class _MobileMoneyPaymentState extends State<MobileMoneyPayment> {
         }
       });
     });
-  }
-
-  void getDate() {
-    debugPrint("DATE");
-    var now = DateTime.now();
-    var dtFormatted = DateFormat('yyyy-MM-dd');
-    setState(() {
-      date = dtFormatted.format(now);
-      debugPrint(date);
-    });
-  }
-
-  getAccountProtection() async {
-    debugPrint(
-        "################ GET ACCOUNT PROTECTION##########################");
-    debugPrint(widget.token);
-    try {
-      Response response = await get(Uri.parse(Api.userAccount),
-          headers: {"Authorization": "Bearer ${widget.token}"});
-
-      debugPrint("  --> Code de la reponse : [${response.statusCode}]");
-      debugPrint("  --> Contenue de la reponse : ${response.body}");
-
-      if (response.statusCode == 200) {
-        var result = jsonDecode(response.body);
-
-        setState(() {
-          debugPrint("Initialisation de accountProtection");
-          accountProtection = result["account_protection"];
-          debugPrint(
-              " @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@à ACCOUNT PROTECTION $accountProtection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        });
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-    debugPrint("##########################################");
-  }
-
-  sendMoneyToSomeone() async {
-    try {
-      Response response = await post(
-          Uri.parse("${Api.domain}users/transactionsFromClient/"),
-          headers: {
-            "Authorization": "Bearer ${widget.token}",
-            "Content-type": "application/json"
-          },
-          body: jsonEncode({
-            "provider": provider,
-            "payee": _adresseMarchand.text,
-            "amount": amountToSend,
-            "note": (_noteToSend.text.isEmpty) ? "transfert" : _noteToSend.text,
-            "transaction_protection_code": ""
-          }));
-
-      if (response.statusCode == 200) {
-        debugPrint("paiement éffectué");
-        debugPrint('le contenu de la reponse : ${response.body}');
-        openDialog("Transaction éffectué", true);
-      } else {
-        debugPrint("echec du paiement : ${response.body}");
-        openDialog("Transaction echouée", false);
-      }
-    } catch (e) {
-      debugPrint("erreur : ${e.toString()}");
-    }
   }
 
   @override
@@ -319,6 +252,67 @@ class _MobileMoneyPaymentState extends State<MobileMoneyPayment> {
         backgroundColor: Colors.white,
       ),
     );
+  }
+
+  getAccountProtection() async {
+    debugPrint(
+        "################ GET ACCOUNT PROTECTION##########################");
+    debugPrint(widget.token);
+    try {
+      Response response = await get(Uri.parse(Api.userAccount),
+          headers: {"Authorization": "Bearer ${widget.token}"});
+
+      debugPrint("  --> Code de la reponse : [${response.statusCode}]");
+      debugPrint("  --> Contenue de la reponse : ${response.body}");
+
+      if (response.statusCode == 200) {
+        var result = jsonDecode(response.body);
+
+        setState(() {
+          debugPrint("Initialisation de accountProtection");
+          accountProtection = result["account_protection"];
+          debugPrint(
+              " @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@à ACCOUNT PROTECTION $accountProtection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        });
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    debugPrint("##########################################");
+  }
+
+  sendMoneyToSomeone() async {
+    try {
+      Response response = await post(Uri.parse(Api.sendMoneyByClient),
+          headers: {
+            "Authorization": "Bearer ${widget.token}",
+            "Content-type": "application/json"
+          },
+          body: jsonEncode({
+            "provider": provider,
+            "payee": _adresseMarchand.text,
+            "amount": amountToSend,
+            "note": (_noteToSend.text.isEmpty) ? "transfert" : _noteToSend.text,
+            "transaction_protection_code": ""
+          }));
+
+      if (response.statusCode == 200) {
+        debugPrint("paiement éffectué");
+        debugPrint('le contenu de la reponse : ${response.body}');
+        var result = jsonDecode(response.body);
+        final hasKey = result.containsKey("error");
+        if (hasKey) {
+          openDialog("Transaction échouée", false);
+        } else {
+          openDialog("Transaction éffectué", true);
+        }
+      } else {
+        debugPrint("echec du paiement : ${response.body}");
+        openDialog("Transaction echouée", false);
+      }
+    } catch (e) {
+      debugPrint("erreur : ${e.toString()}");
+    }
   }
 
   Future openDialog(String message, bool status) => showDialog(
