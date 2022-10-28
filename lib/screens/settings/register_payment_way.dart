@@ -60,7 +60,7 @@ class _PaymentWayState extends State<PaymentWay> {
       appBar: appBar(context),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal),
+          padding: EdgeInsets.symmetric(horizontal: InstaSpacing.medium),
           child: Column(
             children: [
               const SizedBox(
@@ -249,7 +249,7 @@ class _PaymentWayState extends State<PaymentWay> {
         openDialog("Enregistrement échoué", false);
       }
     } catch (e) {
-      debugPrint("@@@@@@@@@@@@@ une exception est survenue");
+      debugPrint("une exception est survenue");
     }
   }
 }

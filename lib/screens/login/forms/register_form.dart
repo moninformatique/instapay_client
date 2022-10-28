@@ -320,6 +320,10 @@ class _RegisterFormState extends State<RegisterForm> {
         }
       } catch (e) {
         debugPrint("[X] Une erreur est survenue  \n $e");
+        setState(() {
+          // Arret du widget de chargement
+          loading = false;
+        });
         showInformation(context, false, "Vérifiez votre connexion internet");
       }
     } else {

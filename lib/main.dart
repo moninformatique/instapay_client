@@ -1,11 +1,14 @@
 // Packages Flutter
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'components/constants.dart';
 import 'screens/login/login.dart';
-import 'screens/pincode/authentication.dart';
+import 'screens/authentication/authentication.dart';
 
 /// InitData : Classe qui définit les paramètres dans l'initialisation de la première page
 class InitData {
@@ -27,13 +30,39 @@ Future<InitData> init() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   String? userEmail = pref.getString("user");
   String? tokens = pref.getString("tokens");
-  String? pincode = pref.getString("pincode");
 
-  if (userEmail != null && pincode != null && tokens != null) {
+  if (userEmail != null && tokens != null) {
     // Les données ne sont pas nulles,  Un utilisateur connecté existe
     debugPrint("[$userEmail est déjà connecté]");
     sharedText = userEmail;
-    routeName = PageRoutes.pincode;
+
+    var token = jsonDecode(tokens)["access"];
+
+    debugPrint("Obtention des informations de l'utilisateur  ");
+
+    try {
+      Response response = await get(Uri.parse(Api.userInformations),
+          headers: <String, String>{"Authorization": "Bearer $token"});
+
+      debugPrint("  --> Envoie de la requete d'obtention des informations");
+      debugPrint("  --> Code de la reponse : [${response.statusCode}]");
+      debugPrint("  --> Contenue de la reponse : ${response.body}");
+      var error = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        debugPrint("[OK] vérification reussie avec succès");
+        routeName = PageRoutes.authentication;
+      } else if (response.statusCode == 401 &&
+          error["code"] == "token_not_valid" &&
+          error["messages"][0]["token_type"] == "access") {
+        debugPrint("Token expiré");
+        await pref.clear();
+      } else {
+        debugPrint("[X] Vérification échoué : HTTP ${response.statusCode}");
+      }
+    } catch (e) {
+      routeName = PageRoutes.authentication;
+      debugPrint("[X] Une erreur est survenue : \n $e");
+    }
   } else {
     // Les données recupérées sont nulles, il n'existe aucun utilisateur connecté
     debugPrint("[Aucun utilisateur connecté]");
@@ -42,6 +71,14 @@ Future<InitData> init() async {
   debugPrint("[OK] Recherche d'une session");
   return InitData(sharedText, routeName);
 }
+
+// Pour vérifier que le token d'accès est toujours valide
+// Normalement, on devrait utiliser le refesh token
+// Mais c'est pas encore disponible
+// Impossible de le déconnecté dans le cas écheant car le token d'accès n'est pas valide également
+// Donc on renvoi l'utilisateur sur la page de connexion si le token n'est pas valide
+
+getUserInformations(String token) async {}
 
 /// main() : Exécution de la page racine
 Future main() async {
@@ -112,7 +149,7 @@ class _MyAppState extends State<MyApp> {
         if (settings.name == PageRoutes.login) {
           return MaterialPageRoute(builder: (_) => const Login());
         } else {
-          if (settings.name == PageRoutes.pincode &&
+          if (settings.name == PageRoutes.authentication &&
               widget.initData?.sharedText != null) {
             return MaterialPageRoute(
                 builder: (_) => Authentication(

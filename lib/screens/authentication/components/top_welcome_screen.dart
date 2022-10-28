@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// TopPincodeScreen : Cette page décris la partie supérieur des interface de saisie de code PIN
+/// TopWelcomeScreen : Cette page décris la partie supérieur des interfaces
+/// de bienvenue
 
-class TopPincodeScreen extends StatelessWidget {
+class TopWelcomeScreen extends StatelessWidget {
   final String userImage;
   final String userMessage;
   final String userEmail;
-  const TopPincodeScreen(
+  const TopWelcomeScreen(
       {Key? key,
       required this.userImage,
       required this.userMessage,
@@ -30,8 +31,11 @@ class TopPincodeScreen extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
         ),
 
-        // contact de l'utilisateur présentément connecté
-        Text(userEmail),
+        // Contact de l'utilisateur présentément connecté
+        Text(
+          userEmail,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(
           height: 5,
         ),

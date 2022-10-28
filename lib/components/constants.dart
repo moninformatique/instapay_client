@@ -12,29 +12,28 @@ List<Map<String, dynamic>> providers = [
   {"id": 4, "name": "Moov Mobile Money", "imagepath": "assets/images/moov.png"}
 ];
 
-/// FONCTIONNALITÉS DE L'API
+// FONCTIONNALITÉS DE L'API
 class Api {
-  // devinstapay.pythonanywhere.com
-  // 164.92.134.116
   static String domain = "http://164.92.134.116/api/v1";
 
   static String signup = "$domain/users/signup/";
   static String login = "$domain/users/login/";
   static String logout = "$domain/users/logout/";
   static String activeAccount = "$domain/users/active_my_account/";
-  static String doubleAuthenticationRequest =
-      "$domain/users/login/second_authentication/";
-  static String loginDoubleAuthentication =
+  static String doubleAuthentication =
       "$domain/users/login/second_authentication/";
 
   static String resetPasswordRequest = "$domain/users/ask_for_reset_password/";
   static String resetPassword = "$domain/users/reset_password/";
   static String changePassword = "$domain/users/change_password/";
+  static String changeUserInformations = "$domain/users/edit_profile/";
 
   static String paymentRequest = "$domain/users/payment_request/";
   static String sendMoney = "$domain/users/transactions/";
   static String sendMoneyByClient = "$domain/users/transactionsFromClient/";
   static String transactions = "$domain/users/transactions/";
+
+  static String generateTransactionCode = "$domain/users/getTemporaryCode/";
 
   static String userProfil = "$domain/users/profil/";
   static String userSecurity = "$domain/users/security/";
@@ -54,7 +53,7 @@ class Api {
   static String addPaymentMethod = "$domain/users/addPaymentMethod/";
 }
 
-// DIMENSSIONS PADDING
+// DIMENSIONS PADDING
 class InstaSpacing {
   static double normal = 16.0;
   static double medium = 32.0;
@@ -87,10 +86,6 @@ class InstaColors {
   static Color pink = const Color(0xFFf5bde8);
   static Color purple = const Color(0xFFd9bcff);
   static Color red = const Color(0xFFef5013);
-
-  /*  Couleurs obsolètes
-  static Color kPrimaryLightColor = Color(0xFFC9C9E4);
-  */
 }
 
 // COULEURS DE WIDGETS DE L'APPLICATION
@@ -129,6 +124,7 @@ class InstaStyles {
   );
 }
 
+// DIMENSIONS ECRAN
 class Screens {
   BuildContext context;
   late MediaQueryData mediaQueryData;
@@ -186,38 +182,11 @@ class Screens {
   }
 }
 
+// ROUTES VERS LES PAGES
 class PageRoutes {
   /// Définition des noms de route vers les pages de l'application
-  static String pincode = "pincode";
+  static String authentication = "authentication";
   static String login = "login";
+  static String noInternet = "interneterror";
+  static String tokenInvalid = "login";
 }
-
-/*
-Pour définir des contantes qui donnerons les dimmentions des écrans
-class Widgets {
-  final int h = 0;
-  static int width = 0;
-  static int padding = 0;
-  static int hWithoutSafeArea = 0;
-  static int hWithoutToolbar = 0;
-
-  size(BuildContext context) {
-    int h = 100;
-    // Full screen width and height
-    //double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-
-    // Height (without SafeArea)
-    var padding = MediaQuery.of(context).viewPadding;
-    double height1 = height - padding.top - padding.bottom;
-
-    // Height (without status bar)
-    double height2 = height - padding.top;
-
-    // Height (without status and toolbar)
-    double height3 = height - padding.top - kToolbarHeight;
-    //return 0.0;
-  }
-}
-
-*/

@@ -62,6 +62,7 @@ dependencies:
   flutter_native_splash: ^2.2.9
   toggle_switch: ^2.0.1
   local_auth: ^2.1.2
+  internet_connection_checker: ^0.0.1+4
   
   
   

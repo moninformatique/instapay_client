@@ -1,5 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,115 +15,172 @@ class UserProfil extends StatefulWidget {
 
 class _UserProfilState extends State<UserProfil> {
   Map<String, dynamic> tokens = {};
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  TextEditingController newPasswordController = TextEditingController();
+  TextEditingController oldPasswordController = TextEditingController();
+  bool obscuretext = true;
+  bool loading = false;
+  bool submit = false;
+
+  @override
+  void initState() {
+    oldPasswordController
+        .addListener(() => setState(() => submit = validateForm()));
+    newPasswordController
+        .addListener(() => setState(() => submit = validateForm()));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    oldPasswordController.dispose();
+    newPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController newPasswordController = TextEditingController();
-    TextEditingController oldPasswordController = TextEditingController();
     return Scaffold(
-      appBar: appBar(context),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              SizedBox(
-                height: 100,
-              ),
-              Text(
-                "Modification du mot de passe",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  height: 0.9,
-                ),
-              ),
-            ],
-          ),
-          const Divider(),
-          const SizedBox(
-            height: 20,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal * 2),
-            child: TextFormField(
-              controller: oldPasswordController,
-              textInputAction: TextInputAction.next,
-              obscureText: true,
-              cursorColor: InstaColors.primary,
-              decoration: InputDecoration(
-                fillColor: Colors.transparent,
-                hintText: "Saisisez le mode passe actuel",
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(color: InstaColors.primary)),
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(InstaSpacing.normal),
-                  child: const Icon(Icons.lock),
-                ),
-              ),
+      appBar: appBar(),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: InstaSpacing.medium),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              height: kToolbarHeight,
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: InstaSpacing.normal,
-                horizontal: InstaSpacing.normal * 2),
-            child: TextFormField(
-              controller: newPasswordController,
-              textInputAction: TextInputAction.done,
-              obscureText: true,
-              cursorColor: InstaColors.primary,
-              decoration: InputDecoration(
-                fillColor: Colors.white70,
-                hintText: "Saisisez le nouveau mot de passe",
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(color: InstaColors.primary)),
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(InstaSpacing.normal),
-                  child: const Icon(Icons.lock),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Modification du mot de passe",
+                  style: TextStyle(
+                    color: InstaColors.boldText,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    height: 0.9,
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: InstaSpacing.normal,
-                horizontal: InstaSpacing.normal * 3),
-            child: ElevatedButton(
-              onPressed: () async {
-                debugPrint("Hashage du mot de passe");
-                var encodeOldPassword = utf8.encode(oldPasswordController.text);
-                var encodeNewPassword = utf8.encode(newPasswordController.text);
 
-                String hashOldPassword =
-                    sha256.convert(encodeOldPassword).toString();
-                String hashNewPassword =
-                    sha256.convert(encodeNewPassword).toString();
-                debugPrint("Old : $hashOldPassword");
-                debugPrint("new : $hashNewPassword");
-                await changePassword(hashOldPassword, hashNewPassword);
-              },
-              child: const Text(
-                "Valider",
-              ),
+            SizedBox(
+              height: InstaSpacing.normal,
             ),
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text("Instapay, pour des transactions sécurisées"),
-            ],
-          ),
-          const Spacer(),
-        ],
+            const Divider(),
+            SizedBox(
+              height: InstaSpacing.normal,
+            ),
+
+            // Formulaire de changement d e mot de passe
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Fonrmulaire de changement de mot de passe
+                Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    children: [
+                      // Champ de l'ancien mot de passe
+                      TextFormField(
+                        controller: oldPasswordController,
+                        obscureText: obscuretext,
+                        keyboardType: TextInputType.text,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.password),
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                obscuretext = !obscuretext;
+                              });
+                            },
+                            child: Icon(obscuretext
+                                ? Icons.visibility
+                                : Icons.visibility_off),
+                          ),
+                          hintText: "Mot de passe actuel",
+                        ),
+                        validator: (password) {
+                          return password != null && password.length < 8
+                              ? "Mot de passe trop court"
+                              : null;
+                        },
+                      ),
+
+                      // Espacement
+                      SizedBox(height: InstaSpacing.normal),
+
+                      // Champ du nouveau mot de passe
+                      TextFormField(
+                        controller: newPasswordController,
+                        obscureText: obscuretext,
+                        keyboardType: TextInputType.text,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.password),
+                          hintText: "Nouveau mot de passe",
+                        ),
+                        validator: (password) {
+                          return password != null && password.length < 8
+                              ? "Mot de passe trop court"
+                              : null;
+                        },
+                      ),
+
+                      // Espacement
+                      SizedBox(height: InstaSpacing.normal),
+
+                      // Champ de soumission du formulaire
+                      loading
+                          ? CircularProgressIndicator(
+                              color: InstaColors.primary,
+                              strokeWidth: 5,
+                            )
+                          :
+                          // Boutton de mangement de mot de passe
+                          ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  onSurface: InstaColors.primary),
+                              onPressed: submit
+                                  ? () {
+                                      final isValidForm =
+                                          formKey.currentState!.validate();
+                                      if (isValidForm) {
+                                        debugPrint("Formulaire valide ... ");
+
+                                        if (oldPasswordController.text !=
+                                            newPasswordController.text) {
+                                          showInformation(context, false,
+                                              "Mot de passe différents ");
+                                        } else {
+                                          setState(() => loading = true);
+                                          changePassword(
+                                              oldPasswordController.text,
+                                              newPasswordController.text);
+                                        }
+                                      } else {
+                                        showInformation(context, false,
+                                            "Vos informations ne sont pas valides");
+                                      }
+                                    }
+                                  : null,
+                              child: const Text("MODIFIER")),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            
+          ],
+        ),
       ),
     );
   }
 
-  AppBar appBar(BuildContext context) {
+  AppBar appBar() {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -146,7 +204,7 @@ class _UserProfilState extends State<UserProfil> {
     );
   }
 
-  Future<void> changePassword(String oldPassword, String newPassword) async {
+  changePassword(String oldPassword, String newPassword) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     setState(() {
       tokens = jsonDecode(pref.getString("tokens")!);
@@ -154,9 +212,7 @@ class _UserProfilState extends State<UserProfil> {
     try {
       debugPrint("Tentative de changement de mot de passe");
 
-      Response response = await patch(
-          //Uri.parse('http://164.92.134.116/api/v1/change_password/'),
-          Uri.parse('${Api.domain}/users/change_password/'),
+      Response response = await patch(Uri.parse(Api.changePassword),
           body: jsonEncode(<String, dynamic>{
             "old_password": oldPassword,
             "new_password": newPassword
@@ -168,41 +224,62 @@ class _UserProfilState extends State<UserProfil> {
 
       debugPrint("Code de la reponse : [${response.statusCode}]");
       debugPrint("Contenue de la reponse : ${response.body}");
-      //String content = response.body.toString();
-      //file.writeAsStringSync(content);
 
+      setState(() => loading = false);
       if (response.statusCode == 200) {
         debugPrint("Le changement du mot de passe a été éffectué");
-        openDialog("succès", true);
+        oldPasswordController.clear();
+        newPasswordController.clear();
+        showInformation(
+            context, true, "Votre changement de mot de passe a été éffectué");
       } else {
         debugPrint("le changement de mot de passe a échoué");
-        openDialog("echec", false);
+        showInformation(context, false, "Une érreur est survenue");
       }
     } catch (e) {
       debugPrint(e.toString());
-      openDialog("echec", false);
+      setState(() => loading = false);
+      showInformation(context, false, "Vérifiez votre connexion internet");
     }
   }
 
-  Future openDialog(String message, bool status) => showDialog(
-      context: context,
-      builder: ((context) => AlertDialog(
-            // ignore: sized_box_for_whitespace
-            content: Container(
-              height: 150,
-              child: Column(
-                children: [
-                  Icon(
-                    status ? Icons.check_circle : Icons.error,
-                    color: status ? InstaColors.success : InstaColors.error,
-                    size: 100,
-                  ),
-                  SizedBox(
-                    height: InstaSpacing.normal,
-                  ),
-                  Text(message),
-                ],
+  // Affiche des informations en rapport avec les resultats des requetes à l'utilisateur
+  showInformation(BuildContext context, bool isSuccess, String message) {
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            isSuccess ? Icons.check_circle : Icons.error,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(
+            width: 20,
+          ),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          )));
+          )
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: isSuccess ? InstaColors.success : InstaColors.error,
+      elevation: 3,
+    ));
+  }
+
+  // Verifie si le formulaire est valide
+  bool validateForm() {
+    bool isValid = oldPasswordController.text.length >= 8 &&
+        newPasswordController.text.length >= 8;
+    // Retourne true si le mail et le mot de passe respecte les conditions et non sinon
+    return isValid;
+  }
 }

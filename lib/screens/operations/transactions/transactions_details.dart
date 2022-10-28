@@ -14,10 +14,9 @@ class TransactionsDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var formatted = DateFormat('MMMM dd,  yyyy à HH:mm');
-    // Description en bas de la page
-    double amountCredited = double.parse(
-        (transaction["amount"] + transaction["amount"] * 0.01)
-            .toStringAsFixed(0));
+    // Commentaire en bas de page en bas de la page
+    double amountCredited =
+        double.parse((transaction["amount"] * (100 / 99)).toStringAsFixed(0));
     return Scaffold(
       appBar: appBar(context),
       body: Padding(
@@ -213,18 +212,18 @@ class OtherDetailsItem extends StatelessWidget {
     déduit du montant lors de la transaction
 
 ------------------------ Théorie -----------------------
-montant_credite = montant retirer du compte de l'expéditeur
+montant_credite = Montant retirer du compte de l'expéditeur
 montant_recu = Montant réçu
-  -                     -------------
-frais_transaction = frais de transaction sur le montant crédité (1% montant_credite)
-frais_montant_recu = frais sur le montant réçu (1% montant_recu)
-
-frais_transaction = 0.01 * montant_credite
-frais_montant_recu = 0.01 * montant_recu
-                          --------------
-montant_recu = montant_credite - frais_transaction
+                       -------------
 (Solution)
-montant_credite = montant_recu + frais_montant_recu (arrondi à 0 chifre àprès la virgule)
+montant_recu = montant_credite - montant_credite * 1 / 100
+montant_recu = montant_credite * ( 1 - 1 / 100 )
+montant_recu = montant_credite * ( 99 / 100 )
+montant_credite = montant_recu *  ( 100 / 99 )
+
+
+
+
 
 
 -------------------------- Example -------------------------
@@ -237,9 +236,9 @@ Informations perdues lors de la transaction
 
 
 montant_recu = 2475
-frais_montant_recu = 24.75
 
-montant_credite = 2475 + 24.75 = 2499.75 +-= 2500
+montant_credite = 2475 * ( 100 / 99 ) 
+                = 2500
 
 
 */

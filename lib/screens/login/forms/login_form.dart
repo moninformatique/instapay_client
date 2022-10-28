@@ -3,12 +3,12 @@
 // packages Flutter et Dart puis ceux propre à l'application
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:instapay_client/screens/login/instructions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
 
 import '../../../components/constants.dart';
-import '../../pincode/create_pincode.dart';
 import '../../settings/reset_password.dart';
 import '../login_double_authentication.dart';
 
@@ -236,6 +236,8 @@ class _LoginFormState extends State<LoginForm> {
                           ),
                         ],
                       ),
+                    
+                    
                     ])))));
   }
 
@@ -335,7 +337,7 @@ class _LoginFormState extends State<LoginForm> {
             loading = false;
           });
           debugPrint("[OK] Double authentification déactivé");
-          goToCreatePinCodeScreen(emailController.text);
+          gotToInstructionsScreen(emailController.text);
         }
       } else {
         setState(() {
@@ -364,7 +366,7 @@ class _LoginFormState extends State<LoginForm> {
       debugPrint(
           "[_] Requete de demande de code pour la double authentification ");
       // Requête vers l'API pour demander un code de seconde authentification
-      Response response = await get(Uri.parse(Api.doubleAuthenticationRequest),
+      Response response = await get(Uri.parse(Api.doubleAuthentication),
           headers: <String, String>{"Authorization": "Bearer $token"});
 
       debugPrint(
@@ -411,16 +413,14 @@ class _LoginFormState extends State<LoginForm> {
                 )));
   }
 
-  // Fonction de chargement de la page de creation de code PIN
-  void goToCreatePinCodeScreen(String userEmail) {
-    debugPrint(" Chargement de la page de creation de code pin");
+  // Fonction de chargement de la page d'instruction'
+  void gotToInstructionsScreen(String userEmail) {
     emailController.clear();
     passwordController.clear();
 
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-            builder: (context) => CreatePinCode(userEmail: userEmail)),
+        MaterialPageRoute(builder: (context) => const Instructions()),
         (route) => true);
   }
 
@@ -455,4 +455,5 @@ class _LoginFormState extends State<LoginForm> {
       elevation: 3,
     ));
   }
+
 }

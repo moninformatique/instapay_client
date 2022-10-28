@@ -1,11 +1,9 @@
-import 'dart:convert';
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:http/http.dart';
-import 'package:instapay_client/components/constants.dart';
-import 'package:instapay_client/screens/operations/payment/payment.dart';
-
+import '../../components/constants.dart';
+import '../operations/payment/payment.dart';
 import '../operations/home/home.dart';
 import '../settings/settings.dart';
 
@@ -21,19 +19,16 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // Variable de gestion des pages de la barre de navigation du bas
   PageStorageBucket bucket = PageStorageBucket();
-
-  double balance = 0.0;
   int selectedScreenIndex = 0;
-  bool accountProtection = false;
 
   @override
   void initState() {
     super.initState();
-
     setState(() {
-      debugPrint("---------------- InitState -----------------------");
-      getBalance(widget.token);
-      debugPrint("---------------- InitState fin------------------");
+      debugPrint(
+          "---------------- InitState myHomePage -----------------------");
+
+      debugPrint("---------------- InitState myHomePage fin------------------");
     });
   }
 
@@ -48,7 +43,6 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Widget> screenList = [
       Home(
         token: widget.token,
-        balance: balance,
         userEmail: widget.userEmail,
       ),
       const SettingsScreen(),
@@ -181,41 +175,36 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // obtenir le sold de l'utilisateur connecté
-  getBalance(String token) async {
-    debugPrint("GetBallance ......");
-
-    debugPrint("Token de l'utilisateur $token");
-    try {
-      debugPrint("[_] Obtention du sole de l'utilisateur en cours");
-      Response response = await get(Uri.parse(Api.userInformations),
-          headers: {"Authorization": "Bearer $token"});
-
-      debugPrint("  --> Code de la reponse : [${response.statusCode}]");
-      debugPrint("  --> Contenue de la reponse : ${response.body}");
-
-      if (response.statusCode == 200) {
-        debugPrint("[OK] Obtention du sole de l'utilisateur reussi");
-        var result = jsonDecode(response.body);
-
-        setState(() {
-          balance = result["balance"].round();
-          accountProtection = result["transaction_protection"];
-          debugPrint("la balance est : $balance");
-        });
-      } else {
-        setState(() {
-          balance = 0.0;
-          debugPrint("$balance");
-        });
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-      setState(() {
-        balance = 0.0;
-        debugPrint("la balance est : $balance");
-      });
-    }
+  // Affiche des informations en rapport avec les resultats des requetes à l'utilisateur
+  showInformation(BuildContext context, bool isSuccess, String message) {
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            isSuccess ? Icons.check_circle : Icons.error,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(
+            width: 20,
+          ),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          )
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: isSuccess ? InstaColors.success : InstaColors.error,
+      elevation: 3,
+    ));
   }
 }
 
@@ -253,34 +242,6 @@ class ButtonBottomBar extends StatelessWidget {
                 fontSize: 10),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// les différentes pages du menu
-class Page extends StatelessWidget {
-  final String title;
-  const Page({Key? key, required this.title}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 24),
-            ),
-            TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("retour"))
-          ],
-        ),
       ),
     );
   }

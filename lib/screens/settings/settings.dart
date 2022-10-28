@@ -1,61 +1,15 @@
-// ignore_for_file: use_build_context_synchronously
-
-/*import 'package:flutter/material.dart';
-import 'constants.dart';
-
-class SettingScreen extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  const SettingScreen({Key? key, required this.data}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('PARATRÈMES'),
-        leading: const Icon(Icons.settings),
-        backgroundColor: InstaColors.primary,
-      ),
-      body: Container(
-        height: size.height,
-        width: double.infinity,
-        child: ListView(
-          children: [
-            ListTile(
-              title: Text("Nom : " + data!['lastname']),
-              onTap: () {},
-            ),
-            ListTile(
-              title: Text("Prenoms : " + data!['firstname']),
-              onTap: () {},
-            ),
-            ListTile(
-              title: Text("Email : " + data!['email']),
-              onTap: () {},
-            ),
-            ListTile(
-              title: Text("Numero de téléphone: " + data!['number']),
-              onTap: () {},
-            ),
-            ListTile(
-              title: Text("Numéro CNI : " + data!['cni']),
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/
-// ignore_for_file: file_names, avoid_unnecessary_containers, camel_case_types
+// ignore_for_file: file_names, avoid_unnecessary_containers, camel_case_types, use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
+import '../errors/invalid_token.dart';
 import '../login/login.dart';
 import 'change_password.dart';
+import 'generate_transaction_code.dart';
 import 'register_payment_way.dart';
 import 'user_informations.dart';
 import '../../components/constants.dart';
@@ -70,11 +24,14 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  TextEditingController codeController = TextEditingController();
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
   Map<String, dynamic> userInformation = {};
   Map<String, dynamic> userAccountsInfo = {};
   Map<String, dynamic> tokens = {};
-  int? optSecured = 1;
-  int? dblOAuth = 1;
+  int hasTransactionProtection = 1;
+  int hasDoubleAuthentication = 1;
+  bool loadingLogout = false;
 
   @override
   void initState() {
@@ -84,6 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    codeController.dispose();
     super.dispose();
   }
 
@@ -92,10 +50,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Container(
+      body: Padding(
         padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal),
-        child: ListView(
-          children: [
+        child: SingleChildScrollView(
+          child: Column(children: [
             const SizedBox(
               height: kToolbarHeight,
             ),
@@ -103,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               "Paramètres",
               style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 25,
                   fontWeight: FontWeight.bold,
                   color: InstaColors.boldText),
             ),
@@ -138,6 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               height: 10,
             ),
 
+            // Voir les informaions du compte
             optionWidget(
               onTap: () {
                 Navigator.push(
@@ -150,6 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(
               height: 10,
             ),
+            // Changer de mot depasse
             optionWidget(
               onTap: () {
                 Navigator.push(
@@ -162,6 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(
               height: 10,
             ),
+            // ajouter un moyen de paiement
             optionWidget(
               onTap: () {
                 Navigator.push(
@@ -169,8 +130,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     MaterialPageRoute(
                         builder: (context) => const PaymentWay()));
               },
-              data: "Moyens de paiement",
+              data: "Ajouter un moyen de paiement",
             ),
+            const SizedBox(
+              height: 10,
+            ),
+            // Générer un code de transaction
+            optionWidget(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => GenerateTransactionCode(
+                              token: tokens['access'],
+                            )));
+              },
+              data: "Générer un code de transaction",
+            ),
+
             const SizedBox(
               height: 10,
             ),
@@ -199,7 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               thickness: 2,
             ),
 
-            // Code de transaction
+            // Code de protection de transactions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -220,44 +197,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   inactiveFgColor: InstaColors.boldText,
                   totalSwitches: 2,
                   labels: const ['On', 'Off'],
-                  initialLabelIndex:
-                      userInformation['transaction_protection'].toString() ==
-                              "true"
-                          ? 0
-                          : 1,
+                  initialLabelIndex: hasTransactionProtection,
                   onToggle: (index) async {
-                    await showDialog(
-                        context: context,
-                        builder: ((context) {
-                          TextEditingController securedCode =
-                              TextEditingController();
-                          return AlertDialog(
-                            content: Form(
-                                child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextFormField(
-                                  controller: securedCode,
-                                  validator: (value) {
-                                    return value!.isNotEmpty
-                                        ? null
-                                        : "remplissez le champs";
-                                  },
-                                  decoration: const InputDecoration(
-                                      hintText: "code de sécurité"),
-                                )
-                              ],
-                            )),
-                            actions: [
-                              TextButton(
-                                  onPressed: () async {
-                                    await securedOpt(securedCode.text, index);
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text("valider"))
-                            ],
-                          );
-                        }));
+                    // index = 0 : On souhaite activer la protection
+                    if (index != null) {
+                      switch (index) {
+                        case 1: // On souhaite désactiver
+                          if (hasTransactionProtection != index) {
+                            // pas encore désactivé : on désactive
+                            disableTransactionProtection(index);
+                          }
+
+                          break;
+                        case 0: // On souhaite activé
+                          if (hasTransactionProtection != index) {
+                            // Pas encore activé : on active
+                            await showDialog(
+                                context: context,
+                                builder: ((context) {
+                                  return AlertDialog(
+                                    // Contenu du dialog
+                                    content: Form(
+                                        key: formKey,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            TextFormField(
+                                              controller: codeController,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              inputFormatters: [
+                                                LengthLimitingTextInputFormatter(
+                                                    4),
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ],
+                                              validator: (value) {
+                                                return value != null &&
+                                                        value.length != 4
+                                                    ? "Le code doit être de 4 chiffres"
+                                                    : null;
+                                              },
+                                              decoration: const InputDecoration(
+                                                  prefixIcon: Icon(Icons.pin),
+                                                  hintText: "Code de sécurité"),
+                                            )
+                                          ],
+                                        )),
+                                    actions: [
+                                      // boutton submit
+                                      TextButton(
+                                          onPressed: () {
+                                            debugPrint(
+                                                "Le code saisi est : ${codeController.text}");
+                                            debugPrint(
+                                                "L'index est (On : 0 / Off : 1) : $index");
+
+                                            final isValidForm = formKey
+                                                .currentState!
+                                                .validate();
+                                            if (isValidForm) {
+                                              enableTransactionProtection(
+                                                  index);
+                                            } else {
+                                              codeController.clear();
+                                              setState(() {
+                                                hasTransactionProtection = 1;
+                                              });
+                                              showInformation(context, false,
+                                                  "Aucun changement n'a été éffectué");
+                                            }
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text(
+                                            "Valider",
+                                            style: TextStyle(
+                                                color: InstaColors.primary,
+                                                fontWeight: FontWeight.bold),
+                                          ))
+                                    ],
+                                  );
+                                }));
+                          }
+                          break;
+                        default:
+                          break;
+                      }
+                    }
                   },
                 ),
               ],
@@ -285,15 +311,83 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   activeFgColor: Colors.white,
                   inactiveBgColor: InstaColors.lightPrimary,
                   inactiveFgColor: InstaColors.boldText,
-                  initialLabelIndex:
-                      (userInformation['double_authentication'].toString() ==
-                              "true"
-                          ? 0
-                          : 1),
+                  initialLabelIndex: hasDoubleAuthentication,
                   totalSwitches: 2,
                   labels: const ['On', 'Off'],
                   onToggle: (index) async {
-                    secondOAuthValue(index);
+                    //userInformation['double_authentication']
+                    if (index != null) {
+                      switch (index) {
+                        case 1: // on souhaite désactivé
+                          if (hasDoubleAuthentication != index) {
+                            // pas encode désactivé : on désactive
+                            // Pas encore ctivé : On active
+                            await showDialog(
+                                context: context,
+                                builder: ((context) {
+                                  return AlertDialog(
+                                    // Contenu du dialog
+                                    content: const Text(
+                                      "Voulez-vous vraiment désactiver la double authentification. Après desactivation, vous serez déconnecté automatiquement.",
+                                    ),
+                                    actions: [
+                                      // boutton submit
+                                      TextButton(
+                                          onPressed: () {
+                                            debugPrint(
+                                                "L'index est (On : 0 / Off : 1) : $index");
+
+                                            disableDoubleAuthentication(index);
+
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text(
+                                            "Désactiver",
+                                            style: TextStyle(
+                                                color: InstaColors.primary,
+                                                fontWeight: FontWeight.bold),
+                                          ))
+                                    ],
+                                  );
+                                }));
+                          }
+                          break;
+                        case 0: // On souhaite activé
+                          if (hasDoubleAuthentication != index) {
+                            // Pas encore ctivé : On active
+                            await showDialog(
+                                context: context,
+                                builder: ((context) {
+                                  return AlertDialog(
+                                    // Contenu du dialog
+                                    content: const Text(
+                                      "Vous etes sur le point d'activer la double authentification pour la protection de votre connexion. Après activation, vous serez déconnecté automatiquement.",
+                                    ),
+                                    actions: [
+                                      // boutton submit
+                                      TextButton(
+                                          onPressed: () {
+                                            debugPrint(
+                                                "L'index est (On : 0 / Off : 1) : $index");
+
+                                            enableDoubleAuthentication(index);
+
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text(
+                                            "Activer",
+                                            style: TextStyle(
+                                                color: InstaColors.primary,
+                                                fontWeight: FontWeight.bold),
+                                          ))
+                                    ],
+                                  );
+                                }));
+                          }
+                          break;
+                        default:
+                      }
+                    }
                   },
                 )
               ],
@@ -308,19 +402,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             // Boutton de déconnexion
-            Center(
-              child: OutlinedButton(
-                onPressed: () async {
-                  await logout();
-                },
-                child: const Text(
-                  "Se déconnecté",
-                  style: TextStyle(
-                      fontSize: 12, letterSpacing: 2.2, color: Colors.red),
-                ),
-              ),
-            ),
-          ],
+            loadingLogout
+                ? Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: InstaSpacing.normal),
+                    child: CircularProgressIndicator(
+                      backgroundColor: InstaColors.primary,
+                      color: Colors.grey.shade400,
+                    ),
+                  )
+                : Center(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        await logout();
+                      },
+                      child: const Text(
+                        "Se déconnecté",
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                            color: Colors.red),
+                      ),
+                    ),
+                  ),
+          ]),
         ),
       ),
     );
@@ -332,152 +438,272 @@ class _SettingsScreenState extends State<SettingsScreen> {
       tokens = jsonDecode(pref.getString("tokens")!);
     });
     try {
-      Response response =
-          await get(Uri.parse("${Api.domain}/users/"), headers: {
+      Response response = await get(Uri.parse(Api.userInformations), headers: {
         "Content-type": "application/json",
         "Authorization": "Bearer ${tokens['access']}"
       });
 
+      var error = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        String data = response.body.toString();
-        var jsonData = jsonDecode(data);
+        var jsonData = jsonDecode(response.body);
         setState(() {
           userInformation = jsonData;
+          hasTransactionProtection =
+              userInformation['transaction_protection'] ? 0 : 1;
+          hasDoubleAuthentication =
+              userInformation['double_authentication'] ? 0 : 1;
         });
         debugPrint("result = $userInformation");
+      } else if (response.statusCode == 401 &&
+          error["code"] == "token_not_valid" &&
+          error["messages"][0]["token_type"] == "access") {
+        debugPrint("Token expiré");
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const InvalidTokenScreen()),
+            (route) => false);
       }
     } catch (e) {
       debugPrint(e.toString());
+      showInformation(context, false, "Vous n'etes pas connecté à internet");
     }
     debugPrint(
         "je suis à la fin de la fonction getUserInformation : $userInformation");
   }
 
-  secondOAuthValue(int? index) async {
+  enableDoubleAuthentication(int index) async {
     try {
-      Response response = (index == 0
-          ? await patch(Uri.parse(Api.activeDoubleAuthentication),
-              body:
-                  jsonEncode(<String, dynamic>{"double_authentication": true}),
-              headers: {
-                  "Content-type": "application/json",
-                  "Authorization": "Bearer ${tokens['access']}"
-                })
-          : await patch(Uri.parse(Api.desactiveDoubleAuthentication),
-              body:
-                  jsonEncode(<String, dynamic>{"double_authentication": false}),
-              headers: {
-                  "Content-type": "application/json",
-                  "Authorization": "Bearer ${tokens['access']}"
-                }));
+      Response response = await patch(Uri.parse(Api.activeDoubleAuthentication),
+          body: jsonEncode(<String, dynamic>{"double_authentication": true}),
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": "Bearer ${tokens['access']}"
+          });
       if (response.statusCode == 200) {
         setState(() {
           debugPrint("je suis dans le setState");
-          dblOAuth = index;
+          hasDoubleAuthentication = index;
         });
+        showInformation(context, true, "Double authentification activé");
 
-        if (index == 0) {
-          logout();
-        }
+        logout();
       } else {
         debugPrint("echec de la requtes code = ${response.statusCode}");
+        showInformation(context, false,
+            "Échec de l'activation de la double authentification");
       }
     } catch (e) {
       debugPrint("une erreur est survenue : ${e.toString()}");
+      showInformation(context, false, "Vérifiez votre connexion internet");
     }
-    setState(() {});
   }
 
-  securedOpt(String code, int? index) async {
-    debugPrint("le code saisi est : $code");
-    debugPrint("l'index est : $index");
+  disableDoubleAuthentication(int index) async {
     try {
-      Response response = index == 1
-          ? await patch(Uri.parse(Api.activeTransactionProtection),
-              body: jsonEncode(
-                  <String, dynamic>{"transaction_protection_code": code}),
-              headers: {
-                  "Content-type": "application/json",
-                  "Authorization": "Bearer ${tokens['access']}"
-                })
-          : await patch(Uri.parse(Api.desactiveTransactionProtection),
-              body: jsonEncode(
-                  <String, dynamic>{"transaction_protection_code": code}),
-              headers: {
-                  "Content-type": "application/json",
-                  "Authorization": "Bearer ${tokens['access']}"
-                });
+      Response response = await patch(
+          Uri.parse(Api.desactiveDoubleAuthentication),
+          body: jsonEncode(<String, dynamic>{"double_authentication": false}),
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": "Bearer ${tokens['access']}"
+          });
+      if (response.statusCode == 200) {
+        setState(() {
+          debugPrint("je suis dans le setState");
+          hasDoubleAuthentication = index;
+        });
+        showInformation(context, true, "Double authentification désactivé");
+      } else {
+        debugPrint("echec de la requtes code = ${response.statusCode}");
+        showInformation(context, false,
+            "Échec de la désctivation de la double authentification");
+      }
+    } catch (e) {
+      debugPrint("une erreur est survenue : ${e.toString()}");
+      showInformation(context, false, "Verifier votre connexion internet");
+    }
+  }
+
+  enableTransactionProtection(int index) async {
+    try {
+      Response response = await patch(
+          Uri.parse(Api.activeTransactionProtection),
+          body: jsonEncode(<String, dynamic>{
+            "transaction_protection_code": codeController.text
+          }),
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": "Bearer ${tokens['access']}"
+          });
 
       debugPrint("le code de la reponse : ${response.statusCode}");
       debugPrint("le contenu de la reponse : ${response.body}");
 
       if (response.statusCode == 200) {
-        setState(() {
-          optSecured = index;
-        });
+        codeController.clear();
         debugPrint("les options de sécurité ont été activé");
+        setState(() {
+          hasTransactionProtection = index;
+        });
+        showInformation(context, true, "Code de transactions activé");
       } else {
         debugPrint("erreur : ${response.statusCode}");
+        showInformation(context, false, "une erreur s'est produite");
       }
     } catch (e) {
       debugPrint("une erreur est survenu : ${e.toString()}");
+      showInformation(context, false, "Vérifiez votre connexion internet");
     }
-
-    setState(() {});
   }
 
-  // Déconnexion
-  logout() async {
+  disableTransactionProtection(int index) async {
     try {
-      Response response = await post(Uri.parse(Api.logout),
-          body: jsonEncode(<String, dynamic>{"refresh": tokens['refresh']}),
+      Response response = await patch(
+          Uri.parse(Api.desactiveTransactionProtection),
+          body:
+              jsonEncode(<String, dynamic>{"transaction_protection_code": ""}),
           headers: {
             "Content-type": "application/json",
             "Authorization": "Bearer ${tokens['access']}"
           });
-      debugPrint("le code de la reponse est : ${response.statusCode}");
-      debugPrint("le contenu de la reponse est : ${response.body}");
 
-      if (response.statusCode == 200) {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        await pref.clear();
-
-        Navigator.pushAndRemoveUntil(context,
-            MaterialPageRoute(builder: (_) => const Login()), (route) => false);
-      }
-    } catch (e) {
-      debugPrint("une erreur est survenu : ${e.toString()}");
-    }
-  }
-
-  /*getAccount() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    setState(() {
-      tokens = jsonDecode(pref.getString("tokens")!);
-      debugPrint("la tokens est : ${tokens}");
-    });
-    try {
-      Response response =
-          await get(Uri.parse("${Api.domain}/users/accounts/"), headers: {
-        "Content-type": "application/json",
-        "Authorization": "Bearer ${tokens['access']}"
-      });
-      debugPrint(
-          "code de la reponse pour les informations du compte : ${response.statusCode}");
+      debugPrint("le code de la reponse : ${response.statusCode}");
       debugPrint("le contenu de la reponse : ${response.body}");
 
       if (response.statusCode == 200) {
-        String data = response.body.toString();
-        var jsonData = jsonDecode(data);
+        debugPrint("les options de sécurité ont été désactivé");
         setState(() {
-          userAccountsInfo = jsonData;
+          hasTransactionProtection = index;
         });
+        showInformation(context, true, "Code de transactions désactivé");
+      } else {
+        debugPrint("erreur : ${response.statusCode}");
+        showInformation(context, false, "Une erreur s'est produite");
       }
     } catch (e) {
-      debugPrint("erreur : ${e.toString()}");
+      debugPrint("une erreur est survenu : ${e.toString()}");
+      showInformation(context, false, "Verifiez votre connexion internet");
     }
-  }*/
+  }
 
+  // Fonction de décconexion de l'utilisateur connecté
+  Future<void> logout() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    setState(() => loadingLogout = true);
+
+    debugPrint(
+        "[_] Déconnexon de l'utilisateur avec les tokens ... ${tokens["access"]} ");
+
+    try {
+      Response response = await post(Uri.parse(Api.logout),
+          body: jsonEncode(<String, dynamic>{
+            "refresh": tokens["refresh"],
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer ${tokens["access"]}"
+          });
+
+      debugPrint("  --> Code de la reponse : [${response.statusCode}]");
+      debugPrint("  --> Contenue de la reponse : ${response.body}");
+      var error = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        await pref.clear();
+        debugPrint("[OK] Déconnexion reussie");
+        setState(() => loadingLogout = false);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const Login()),
+            (route) => false);
+      } else if (response.statusCode == 401 &&
+          error["code"] == "token_not_valid" &&
+          error["messages"][0]["token_type"] == "access") {
+        debugPrint("[X] Déconnexion échouée : Token expiré");
+        await pref.clear();
+        setState(() => loadingLogout = false);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const Login()),
+            (route) => false);
+      } else {
+        debugPrint("[X] Déconnexion échouée");
+        setState(() => loadingLogout = false);
+        openDialog(false, "Déconnexion échouée", "Erreur inconnue");
+      }
+    } catch (e) {
+      debugPrint("[X] Déconnexion échouée");
+      debugPrint(e.toString());
+      setState(() => loadingLogout = false);
+      openDialog(
+          false, "Déconnexion échouée", "Vérifiez votre connexion internet");
+    }
+  }
+
+  // Affiche des informations en rapport avec les resultats des requetes à l'utilisateur
+  showInformation(BuildContext context, bool isSuccess, String message) {
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            isSuccess ? Icons.check_circle : Icons.error,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(
+            width: 20,
+          ),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          )
+        ],
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: isSuccess ? InstaColors.success : InstaColors.error,
+      elevation: 3,
+    ));
+  }
+
+  // Afficher un message
+  Future openDialog(bool status, String title, String message) => showDialog(
+      context: context,
+      builder: ((context) => AlertDialog(
+            // ignore: sized_box_for_whitespace
+            content: Container(
+              height: 180,
+              child: Column(
+                children: [
+                  Icon(
+                    status ? Icons.check_circle : Icons.error,
+                    color: status ? InstaColors.success : InstaColors.error,
+                    size: 90,
+                  ),
+                  SizedBox(
+                    height: InstaSpacing.normal,
+                  ),
+                  Text(
+                    title,
+                    style: TextStyle(
+                        color: InstaColors.boldText,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const Divider(),
+                  Text(
+                    message,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          )));
 }
 
 class optionWidget extends StatelessWidget {

@@ -274,7 +274,7 @@ class _SendMoneyState extends State<SendMoney> {
                               ? Icons.visibility
                               : Icons.visibility_off),
                         ),
-                        hintText: "Code de protection",
+                        hintText: "Code",
                       ),
                       validator: (authCode) {
                         return (authCode != null && authCode.length != 4)
@@ -438,6 +438,7 @@ class _SendMoneyState extends State<SendMoney> {
         amountController.text.isNotEmpty &&
         amountToSend < widget.balance &&
         (int.parse(amountController.text) % 100 == 0);
+    if (accountProtection) isValid = isValid && codeController.text.length == 4;
     // Retourne true
     // si le mail est valide et le champ du montant n'est pas vide
     // si le montant à transféré est un multiple de 100

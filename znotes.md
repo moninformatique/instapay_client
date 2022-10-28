@@ -545,3 +545,9 @@ flutter:   --> Code de la reponse : [401]
 flutter:   --> Contenue de la reponse : {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is invalid or expired"}]}
 flutter:   --> Code de la reponse : [401]
 flutter:   --> Contenue de la reponse : {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is invalid or expired"}]}
+
+
+
+
+════════ Exception caught by foundation library ════════════════════════════════
+'package:flutter/src/widgets/framework.dart': Failed assertion: line 4449 pos 12: '_lifecycleState != _ElementLifecycle.defunct': is not true.

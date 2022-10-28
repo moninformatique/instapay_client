@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart';
+import 'package:instapay_client/screens/login/instructions.dart';
 import 'dart:convert';
 
 import '../../../components/constants.dart';
-import '../pincode/create_pincode.dart';
 
 ///  DoubleAuthentication : Formulaire pour valider la double authentification
 class DoubleAuthentication extends StatefulWidget {
@@ -171,7 +171,7 @@ class _DoubleAuthenticationState extends State<DoubleAuthentication> {
 
     try {
       debugPrint("[..] Tentative de seconde authentification");
-      Response response = await post(Uri.parse(Api.loginDoubleAuthentication),
+      Response response = await post(Uri.parse(Api.doubleAuthentication),
           body: jsonEncode(<String, dynamic>{
             "second_authentication_code": codeController.text,
           }),
@@ -204,8 +204,7 @@ class _DoubleAuthenticationState extends State<DoubleAuthentication> {
     codeController.clear();
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-            builder: (context) => CreatePinCode(userEmail: userEmail)),
+        MaterialPageRoute(builder: (context) => const Instructions()),
         (route) => false);
   }
 
