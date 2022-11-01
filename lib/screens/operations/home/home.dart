@@ -478,15 +478,20 @@ class _HomeState extends State<Home> {
           debugPrint(
               "TOUTES LES TRANSACTIONS : \n ${inTransactions + outTransactions}");
 
-          // Obtenir les identifiants des utilisateurs
-          List<int>? usersId = getUsersId(inTransactions, outTransactions);
-
-          if (usersId != null) {
-            debugPrint("$usersId");
-            // Obtenir les informations des utilisateurs à partir de leur identifiants
-            getUsersInfosWithId(token, usersId);
+          if (inTransactions.isEmpty && outTransactions.isEmpty) {
+            loading = false;
           } else {
-            allTransactionsList = [];
+            // Obtenir les identifiants des utilisateurs
+            List<int>? usersId = getUsersId(inTransactions, outTransactions);
+
+            if (usersId != null) {
+              debugPrint("$usersId");
+              // Obtenir les informations des utilisateurs à partir de leur identifiants
+              getUsersInfosWithId(token, usersId);
+            } else {
+              allTransactionsList = [];
+              loading = false;
+            }
           }
         });
       } else {

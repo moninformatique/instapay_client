@@ -205,7 +205,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         case 1: // On souhaite désactiver
                           if (hasTransactionProtection != index) {
                             // pas encore désactivé : on désactive
-                            disableTransactionProtection(index);
+                            await showDialog(
+                                context: context,
+                                builder: ((context) {
+                                  return AlertDialog(
+                                    // Contenu du dialog
+                                    content: Form(
+                                        key: formKey,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            TextFormField(
+                                              controller: codeController,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              inputFormatters: [
+                                                LengthLimitingTextInputFormatter(
+                                                    4),
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ],
+                                              validator: (value) {
+                                                return value != null &&
+                                                        value.length != 4
+                                                    ? "Le code doit être de 4 chiffres"
+                                                    : null;
+                                              },
+                                              decoration: const InputDecoration(
+                                                  prefixIcon: Icon(Icons.pin),
+                                                  hintText: "Code de sécurité"),
+                                            )
+                                          ],
+                                        )),
+                                    actions: [
+                                      // boutton submit
+                                      TextButton(
+                                          onPressed: () {
+                                            debugPrint(
+                                                "Le code saisi est : ${codeController.text}");
+                                            debugPrint(
+                                                "L'index est (On : 0 / Off : 1) : $index");
+
+                                            final isValidForm = formKey
+                                                .currentState!
+                                                .validate();
+                                            if (isValidForm) {
+                                              disableTransactionProtection(
+                                                  index);
+                                            } else {
+                                              codeController.clear();
+                                              setState(() {
+                                                hasTransactionProtection = 1;
+                                              });
+                                              showInformation(context, false,
+                                                  "Aucun changement n'a été éffectué");
+                                            }
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text(
+                                            "Valider",
+                                            style: TextStyle(
+                                                color: InstaColors.primary,
+                                                fontWeight: FontWeight.bold),
+                                          ))
+                                    ],
+                                  );
+                                }));
                           }
 
                           break;
@@ -560,8 +625,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       Response response = await patch(
           Uri.parse(Api.desactiveTransactionProtection),
-          body:
-              jsonEncode(<String, dynamic>{"transaction_protection_code": ""}),
+          body: jsonEncode(<String, dynamic>{
+            "transaction_protection_code": codeController.text
+          }),
           headers: {
             "Content-type": "application/json",
             "Authorization": "Bearer ${tokens['access']}"
