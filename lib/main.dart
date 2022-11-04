@@ -62,6 +62,7 @@ Future<InitData> init() async {
     } catch (e) {
       routeName = PageRoutes.authentication;
       debugPrint("[X] Une erreur est survenue : \n $e");
+      // Network is unreachable
     }
   } else {
     // Les données recupérées sont nulles, il n'existe aucun utilisateur connecté
@@ -71,14 +72,6 @@ Future<InitData> init() async {
   debugPrint("[OK] Recherche d'une session");
   return InitData(sharedText, routeName);
 }
-
-// Pour vérifier que le token d'accès est toujours valide
-// Normalement, on devrait utiliser le refesh token
-// Mais c'est pas encore disponible
-// Impossible de le déconnecté dans le cas écheant car le token d'accès n'est pas valide également
-// Donc on renvoi l'utilisateur sur la page de connexion si le token n'est pas valide
-
-getUserInformations(String token) async {}
 
 /// main() : Exécution de la page racine
 Future main() async {
@@ -162,6 +155,13 @@ class _MyAppState extends State<MyApp> {
       },
       // Route initial définit dans la fonction d'initialisation
       initialRoute: widget.initData?.routeName,
+      routes: {
+        //define routes in this map
+        '/login/': (context) => const Login(),
+        '/authentication/': (context) => Authentication(
+              userEmail: widget.initData!.sharedText,
+            ),
+      },
     );
   }
 }

@@ -37,92 +37,102 @@ class _InstructionsState extends State<Instructions> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
+    return Scaffold(
       body: Padding(
         padding: EdgeInsets.all(InstaSpacing.medium),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const SizedBox(
-            height: kToolbarHeight,
-          ),
-          Image.asset(
-            logoPath,
-            height: 90,
-            width: 90,
-          ),
-
-          // Titre bienvenue
-          const Text(
-            "Bienvenue sur Instapay",
-            style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
-          ),
-
-          const Spacer(),
-
-          // Méssage
-
-          Container(
-            padding: EdgeInsets.all(InstaSpacing.normal),
-            decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(30)),
-            child: Column(
-              children: [
-                if (_supportState == _SupportState.supported)
-                  Column(
-                    children: [
-                      const Text(
-                          "Pensez a enregistrer un des moyens de protection disponible sur votre appareil si cela n'est pas encore fait."),
-                      const Divider(),
-                      checkCircle("Code PIN", true),
-                      checkCircle("Mot de passe", true),
-                      checkCircle("Schema", true),
-                    ],
-                  )
-                else
-                  const Text(
-                      "Aucun moyen de protection locale détecté sur votre appareil. Assures vous de le garder toujours à votre porté"),
-                if (_supportState == _SupportState.supported &&
-                    _canCheckBiometrics == true)
-                  Column(
-                    children: [
-                      checkCircle("Empreinte digitale",
-                          availableBiometrics.contains(BiometricType.strong)),
-                      checkCircle("Reconnaissance faciale",
-                          availableBiometrics.contains(BiometricType.face)),
-                      checkCircle("Reconnaissance vocale", false),
-                    ],
-                  ),
-                const Divider(),
-                if (_supportState == _SupportState.supported)
-                  const Text(
-                      "Vous aurez à vous authentifier la prochaine fois que vous allez acceder à l'application."),
-                SizedBox(
-                  height: InstaSpacing.normal,
-                ),
-                TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Loading()));
-                    },
-                    child: Text(
-                      "C'est compris",
-                      style: TextStyle(
-                          color: InstaColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17),
-                    )),
-              ],
+        child: SingleChildScrollView(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const SizedBox(
+              height: kToolbarHeight,
             ),
-          ),
 
-          const Spacer(),
-        ]),
+            // Logo
+            Image.asset(
+              logoPath,
+              height: 90,
+              width: 90,
+            ),
+
+            // Titre bienvenue
+            const Text(
+              "Bienvenue sur Instapay",
+              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
+            ),
+
+            SizedBox(
+              height: InstaSpacing.big,
+            ),
+
+            // Méssage
+
+            Container(
+              padding: EdgeInsets.all(InstaSpacing.normal),
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(30)),
+              child: Column(
+                children: [
+                  if (_supportState == _SupportState.supported)
+                    Column(
+                      children: [
+                        const Text(
+                            "Pensez a enregistrer un des moyens de protection disponible sur votre appareil si cela n'est pas encore fait."),
+                        const Divider(),
+                        checkCircle("Code PIN", true),
+                        checkCircle("Mot de passe", true),
+                        checkCircle("Schema", true),
+                      ],
+                    )
+                  else
+                    const Text(
+                        "Aucun moyen de protection locale détecté sur votre appareil. Assures vous de le garder toujours à votre porté"),
+                  if (_supportState == _SupportState.supported &&
+                      _canCheckBiometrics == true)
+                    Column(
+                      children: [
+                        checkCircle("Empreinte digitale",
+                            availableBiometrics.contains(BiometricType.strong)),
+                        checkCircle("Reconnaissance faciale",
+                            availableBiometrics.contains(BiometricType.face)),
+                        checkCircle("Reconnaissance vocale", false),
+                      ],
+                    ),
+                  const Divider(),
+                  if (_supportState == _SupportState.supported)
+                    const Text(
+                        "Vous aurez à vous authentifier la prochaine fois que vous allez acceder à l'application."),
+                  SizedBox(
+                    height: InstaSpacing.normal,
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Loading()));
+                      },
+                      child: Text(
+                        "C'est compris",
+                        style: TextStyle(
+                            color: InstaColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17),
+                      )),
+                ],
+              ),
+            ),
+
+            //const Spacer(),
+          ]),
+        ),
       ),
-    ));
+    );
   }
 
   // Obtenir les moyens d'authentification biométrique disponible

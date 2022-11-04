@@ -478,8 +478,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 : Center(
                     child: OutlinedButton(
-                      onPressed: () async {
-                        await logout();
+                      onPressed: () {
+                        logout();
                       },
                       child: const Text(
                         "Se déconnecté",
@@ -511,6 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       var error = jsonDecode(response.body);
       if (response.statusCode == 200) {
         var jsonData = jsonDecode(response.body);
+
         setState(() {
           userInformation = jsonData;
           hasTransactionProtection =
@@ -518,6 +519,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           hasDoubleAuthentication =
               userInformation['double_authentication'] ? 0 : 1;
         });
+
         debugPrint("result = $userInformation");
       } else if (response.statusCode == 401 &&
           error["code"] == "token_not_valid" &&
@@ -653,7 +655,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Fonction de décconexion de l'utilisateur connecté
-  Future<void> logout() async {
+  logout() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     setState(() => loadingLogout = true);
 
@@ -678,20 +680,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await pref.clear();
         debugPrint("[OK] Déconnexion reussie");
         setState(() => loadingLogout = false);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const Login()),
-            (route) => false);
+        Navigator.of(context).pushNamed('/login/');
       } else if (response.statusCode == 401 &&
           error["code"] == "token_not_valid" &&
           error["messages"][0]["token_type"] == "access") {
         debugPrint("[X] Déconnexion échouée : Token expiré");
         await pref.clear();
         setState(() => loadingLogout = false);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const Login()),
-            (route) => false);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const Login()));
       } else {
         debugPrint("[X] Déconnexion échouée");
         setState(() => loadingLogout = false);

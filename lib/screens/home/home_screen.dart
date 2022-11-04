@@ -22,22 +22,6 @@ class _MyHomePageState extends State<MyHomePage> {
   int selectedScreenIndex = 0;
 
   @override
-  void initState() {
-    super.initState();
-    setState(() {
-      debugPrint(
-          "---------------- InitState myHomePage -----------------------");
-
-      debugPrint("---------------- InitState myHomePage fin------------------");
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     // Liste des pages du menu
     List<Widget> screenList = [

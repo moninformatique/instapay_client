@@ -37,16 +37,14 @@ class _PaymentState extends State<Payment> {
       appBar: appBar(context),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal / 2),
-        child: Expanded(
-          child: Column(
-            children: [
-              const SizedBox(
-                height: kToolbarHeight,
-              ),
-              actionsButtons(),
-            ],
+        child: Column(children: [
+          const SizedBox(
+            height: kToolbarHeight,
           ),
-        ),
+          Expanded(
+            child: actionsButtons(),
+          ),
+        ]),
       ),
     );
   }

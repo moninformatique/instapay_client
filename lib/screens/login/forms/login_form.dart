@@ -236,8 +236,6 @@ class _LoginFormState extends State<LoginForm> {
                           ),
                         ],
                       ),
-                    
-                    
                     ])))));
   }
 
@@ -292,7 +290,7 @@ class _LoginFormState extends State<LoginForm> {
           showInformation(context, false,
               "Ces informations ne correspondent a aucun compte actif");
         } else {
-          showInformation(context, false, "Verifiez votre connexion internet");
+          showInformation(context, false, "Tentative de connexion échouée");
         }
       }
     } catch (e) {
@@ -345,7 +343,8 @@ class _LoginFormState extends State<LoginForm> {
           loading = false;
         });
         debugPrint("[X] Vérification échoué : HTTP ${response.statusCode}");
-        showInformation(context, false, "Verifiez votre connexion internet");
+        showInformation(
+            context, false, "Recherche de double authentification échouée");
       }
     } catch (e) {
       debugPrint("[X] Une erreur est survenue : \n $e");
@@ -386,7 +385,8 @@ class _LoginFormState extends State<LoginForm> {
       } else {
         debugPrint("[X] Vérification échoué : HTTP ${response.statusCode}");
 
-        showInformation(context, false, "Verifiez votre connexion internet");
+        showInformation(
+            context, false, "Impossible d'obtenir le code d'authentification");
       }
     } catch (e) {
       debugPrint("[X] Une erreur est survenue : \n $e");
@@ -455,5 +455,4 @@ class _LoginFormState extends State<LoginForm> {
       elevation: 3,
     ));
   }
-
 }

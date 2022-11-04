@@ -57,117 +57,115 @@ class _AuthenticationState extends State<Authentication> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: Padding(
-          padding: EdgeInsets.all(InstaSpacing.medium),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Espacememnt en haut de page
-              SizedBox(
-                height: InstaSpacing.large,
-              ),
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(InstaSpacing.medium),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Espacememnt en haut de page
+            SizedBox(
+              height: InstaSpacing.large,
+            ),
 
-              // Partie supérieur de la page
-              TopWelcomeScreen(
-                userEmail: widget.userEmail,
-                userImage: logoPath,
-                userMessage: "Bon retour",
-              ),
+            // Partie supérieur de la page
+            TopWelcomeScreen(
+              userEmail: widget.userEmail,
+              userImage: logoPath,
+              userMessage: "Bon retour",
+            ),
 
-              !loadingLogout
-                  ?
-                  // Boutton de déconnexion
-                  SizedBox(
-                      width: 180,
-                      child: TextButton(
-                        onPressed: () => logout(),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.logout,
-                              color: Colors.red,
-                            ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              "Se déconecter",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : Padding(
-                      padding: EdgeInsets.only(top: InstaSpacing.normal),
-                      child: CircularProgressIndicator(
-                        backgroundColor: InstaColors.primary,
-                        color: Colors.grey.shade400,
+            !loadingLogout
+                ?
+                // Boutton de déconnexion
+                SizedBox(
+                    width: 180,
+                    child: TextButton(
+                      onPressed: () => logout(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.logout,
+                            color: Colors.red,
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            "Se déconecter",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
                       ),
                     ),
-
-              const Spacer(),
-
-              if (_supportState == _SupportState.supported && isAuthenticating)
-                // Bouttonn d'arret du processus d'authentification
-                ElevatedButton(
-                  onPressed: cancelAuthentication,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const <Widget>[
-                      Text("STOPER L'AUTHENTIFICATION"),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Icon(Icons.cancel_outlined),
-                    ],
+                  )
+                : Padding(
+                    padding: EdgeInsets.only(top: InstaSpacing.normal),
+                    child: CircularProgressIndicator(
+                      backgroundColor: InstaColors.primary,
+                      color: Colors.grey.shade400,
+                    ),
                   ),
-                )
-              else if (_supportState == _SupportState.supported &&
-                  !isAuthenticating)
-                // Boutton d'authentificaiton
-                ElevatedButton(
-                  onPressed: () => authenticate(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const <Widget>[
-                      Text("S'AUTHENTIFIER"),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Icon(Icons.perm_device_information_outlined),
-                    ],
-                  ),
-                )
-              else
-                // Boutton pour continuer sans authentification
-                Column(
-                  children: [
-                    const Text(
-                      "Aucun moyen d'authentification supporté",
-                      style: TextStyle(
-                          color: Colors.red, fontWeight: FontWeight.bold),
+
+            const Spacer(),
+
+            if (_supportState == _SupportState.supported && isAuthenticating)
+              // Bouttonn d'arret du processus d'authentification
+              ElevatedButton(
+                onPressed: cancelAuthentication,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Text("STOPER L'AUTHENTIFICATION"),
+                    SizedBox(
+                      width: 5,
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Loading()),
-                            (route) => false);
-                      },
-                      child: const Text("CONTINUER QUAND MEME"),
-                    )
+                    Icon(Icons.cancel_outlined),
                   ],
                 ),
-            ],
-          ),
+              )
+            else if (_supportState != _SupportState.supported &&
+                !isAuthenticating)
+              // Boutton d'authentificaiton
+              ElevatedButton(
+                onPressed: () => authenticate(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const <Widget>[
+                    Text("S'AUTHENTIFIER"),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Icon(Icons.perm_device_information_outlined),
+                  ],
+                ),
+              )
+            else
+              // Boutton pour continuer sans authentification
+              Column(
+                children: [
+                  const Text(
+                    "Aucun moyen d'authentification supporté",
+                    style: TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Loading()),
+                          (route) => false);
+                    },
+                    child: const Text("CONTINUER QUAND MEME"),
+                  )
+                ],
+              ),
+          ],
         ),
       ),
     );

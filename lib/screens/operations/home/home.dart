@@ -41,13 +41,15 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    setState(() {
-      debugPrint("-------------- Initstate Home ----------");
-      isValidToken();
-      getBalance(widget.token);
-      getTransactions(widget.token);
-      debugPrint("-------------- Initstate Home fin ----------");
-    });
+    if (mounted) {
+      setState(() {
+        debugPrint("-------------- Initstate Home ----------");
+        isValidToken();
+        getBalance(widget.token);
+        getTransactions(widget.token);
+        debugPrint("-------------- Initstate Home fin ----------");
+      });
+    }
 
     super.initState();
   }
@@ -59,8 +61,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Padding(
+    return Scaffold(
+        body: Padding(
       padding: EdgeInsets.symmetric(horizontal: InstaSpacing.normal),
       child: RefreshIndicator(
         onRefresh: () async {

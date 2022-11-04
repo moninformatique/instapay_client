@@ -55,13 +55,13 @@ class TransactionsDetails extends StatelessWidget {
 
                           // Status de la transaction
                           Text(
-                              (transaction["status"])
+                              (transaction["status"] == 1)
                                   ? "Effectuée"
                                   : "En attente",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: (transaction["status"])
+                                color: (transaction["status"] == 1)
                                     ? Colors.green
                                     : Colors.orange,
                               )),

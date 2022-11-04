@@ -133,6 +133,7 @@ class _UserProfilState extends State<UserProfil> {
                       SizedBox(height: InstaSpacing.normal),
 
                       // Champ de soumission du formulaire
+
                       loading
                           ? CircularProgressIndicator(
                               color: InstaColors.primary,
@@ -149,18 +150,10 @@ class _UserProfilState extends State<UserProfil> {
                                           formKey.currentState!.validate();
                                       if (isValidForm) {
                                         debugPrint("Formulaire valide ... ");
-
-                                        if (oldPasswordController.text !=
-                                            newPasswordController.text) {
-                                          showInformation(context, false,
-                                              "Mot de passe différents ");
-                                        } else {
-                                          setState(() => loading = true);
-                                          changePassword(
-                                              oldPasswordController.text,
-                                              newPasswordController.text);
-                                        }
+                                        setState(() => loading = true);
+                                        changePassword();
                                       } else {
+                                        debugPrint("Formulaire invalide ... ");
                                         showInformation(context, false,
                                             "Vos informations ne sont pas valides");
                                       }
@@ -172,8 +165,6 @@ class _UserProfilState extends State<UserProfil> {
                 ),
               ],
             ),
-
-            
           ],
         ),
       ),
@@ -204,7 +195,7 @@ class _UserProfilState extends State<UserProfil> {
     );
   }
 
-  changePassword(String oldPassword, String newPassword) async {
+  changePassword() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     setState(() {
       tokens = jsonDecode(pref.getString("tokens")!);
@@ -214,8 +205,8 @@ class _UserProfilState extends State<UserProfil> {
 
       Response response = await patch(Uri.parse(Api.changePassword),
           body: jsonEncode(<String, dynamic>{
-            "old_password": oldPassword,
-            "new_password": newPassword
+            "old_password": oldPasswordController.text,
+            "new_password": newPasswordController.text
           }),
           headers: <String, String>{
             "Content-Type": "application/json",
@@ -230,8 +221,8 @@ class _UserProfilState extends State<UserProfil> {
         debugPrint("Le changement du mot de passe a été éffectué");
         oldPasswordController.clear();
         newPasswordController.clear();
-        showInformation(
-            context, true, "Votre changement de mot de passe a été éffectué");
+        showInformation(context, true,
+            "Le changement de votre mot de passe a été éffectué");
       } else {
         debugPrint("le changement de mot de passe a échoué");
         showInformation(context, false, "Une érreur est survenue");
