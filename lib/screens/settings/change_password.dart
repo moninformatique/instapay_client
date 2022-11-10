@@ -210,7 +210,8 @@ class _UserProfilState extends State<UserProfil> {
           }),
           headers: <String, String>{
             "Content-Type": "application/json",
-            "Authorization": "Bearer ${tokens['access']}"
+            "Authorization": "Bearer ${tokens['access']}",
+            "X-Api-Key": "ZmFiaW8gZGV2ZWxvcHBlZCB0aGlzIGFwaQ=="
           });
 
       debugPrint("Code de la reponse : [${response.statusCode}]");

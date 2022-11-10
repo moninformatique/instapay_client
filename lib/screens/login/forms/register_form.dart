@@ -291,7 +291,10 @@ class _RegisterFormState extends State<RegisterForm> {
               "password": passwordController.text,
               "status": "client"
             }),
-            headers: <String, String>{"Content-Type": "application/json"});
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "X-Api-Key": "ZmFiaW8gZGV2ZWxvcHBlZCB0aGlzIGFwaQ=="
+            });
 
         debugPrint("  --> Code de la reponse : [${response.statusCode}]");
         debugPrint("  --> Contenue de la reponse : ${response.body}");

@@ -262,7 +262,10 @@ class _LoginFormState extends State<LoginForm> {
             "email": emailController.text,
             "password": passwordController.text
           }),
-          headers: {"Content-Type": "application/json"});
+          headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": "ZmFiaW8gZGV2ZWxvcHBlZCB0aGlzIGFwaQ=="
+          });
 
       debugPrint("  --> Code de la reponse : [${response.statusCode}]");
       debugPrint("  --> Contenue de la reponse : ${response.body}");

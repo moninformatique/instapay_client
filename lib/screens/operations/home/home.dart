@@ -8,6 +8,7 @@ import 'package:http/http.dart';
 import 'package:instapay_client/components/constants.dart';
 
 import '../../errors/invalid_token.dart';
+import '../payment/sendmoney/send_money.dart';
 import '../transactions/components/transaction_item.dart';
 import '../transactions/transactions.dart';
 import 'qrcode_container.dart';
@@ -166,16 +167,14 @@ class _HomeState extends State<Home> {
                           '#ffffff', 'Quitter', true, ScanMode.QR);
 
                       if (response != "-1") {
-                        /*Navigator.push(
+                        Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => SendMoney(
-                                      balance: (widget.balance == balance)
-                                          ? widget.balance
-                                          : balance,
+                                      balance: balance,
                                       receiptEmail: response,
                                       token: widget.token,
-                                    )));*/
+                                    )));
                       } else {
                         debugPrint("Aucun Scann éffectué");
                       }
