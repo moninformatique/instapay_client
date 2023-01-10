@@ -2,7 +2,6 @@
 
 // packages Flutter et Dart puis ceux propre à l'application
 import 'package:flutter/material.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:instapay_client/screens/login/instructions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart';
@@ -35,7 +34,7 @@ class _LoginFormState extends State<LoginForm> {
   bool submit = false; // Etat du boutton de validation : actuf ou non actuf
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  late TextEditingController emailController;
+  late TextEditingController phoneNumberController;
   late TextEditingController passwordController;
 
   // InitState : Initialisation de la page
@@ -43,12 +42,12 @@ class _LoginFormState extends State<LoginForm> {
   void initState() {
     super.initState();
 
-    emailController = TextEditingController();
+    phoneNumberController = TextEditingController();
     passwordController = TextEditingController();
 
     // On ecoute le controlleur du champ email
     // à chaque modification du champ on indique si le bouton de soumission peut etre activer dans l a variable submit
-    emailController.addListener(() {
+    phoneNumberController.addListener(() {
       setState(() {
         submit =
             validateForm(); // si le formulaire est valide,  submit aura la valeur true
@@ -66,9 +65,7 @@ class _LoginFormState extends State<LoginForm> {
   // Dispose : Destruction des ressources utilisées
   @override
   void dispose() {
-    emailController.clear();
-    passwordController.clear();
-    emailController.dispose();
+    phoneNumberController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -126,18 +123,19 @@ class _LoginFormState extends State<LoginForm> {
                                 AutovalidateMode.onUserInteraction,
                             child: Column(
                               children: [
-                                // Champ de l'adresse Mail
+                                // Champ du numéro de téléphone
                                 TextFormField(
-                                  controller: emailController,
-                                  keyboardType: TextInputType.emailAddress,
+                                  controller: phoneNumberController,
+                                  textInputAction: TextInputAction.next,
+                                  keyboardType: TextInputType.phone,
                                   decoration: const InputDecoration(
-                                    prefixIcon: Icon(Icons.alternate_email),
-                                    hintText: "Email",
+                                    prefixIcon: Icon(Icons.phone),
+                                    hintText: "Numéro de téléphone",
                                   ),
-                                  validator: (email) {
-                                    return email != null &&
-                                            !EmailValidator.validate(email)
-                                        ? "Adresse mail invalide"
+                                  validator: (phonenumber) {
+                                    return phonenumber != null &&
+                                            !isValidPhoneNumber(phonenumber)
+                                        ? "Numéro de téléphone invalide"
                                         : null;
                                   },
                                 ),
@@ -150,6 +148,7 @@ class _LoginFormState extends State<LoginForm> {
                                   controller: passwordController,
                                   obscureText: obscuretext,
                                   keyboardType: TextInputType.text,
+                                  textInputAction: TextInputAction.done,
                                   decoration: InputDecoration(
                                     prefixIcon: const Icon(Icons.password),
                                     suffixIcon: GestureDetector(
@@ -185,7 +184,8 @@ class _LoginFormState extends State<LoginForm> {
                                                 builder: (context) =>
                                                     ResetPassword(
                                                       userEmail:
-                                                          emailController.text,
+                                                          phoneNumberController
+                                                              .text,
                                                     )));
                                       },
                                       child: Text(
@@ -207,7 +207,12 @@ class _LoginFormState extends State<LoginForm> {
                                     // Boutton de connexion
                                     ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                            onSurface: InstaColors.primary),
+                                            disabledForegroundColor: InstaColors
+                                                .primary
+                                                .withOpacity(0.38),
+                                            disabledBackgroundColor: InstaColors
+                                                .primary
+                                                .withOpacity(0.12)),
                                         onPressed: submit
                                             ? () {
                                                 final isValidForm = formKey
@@ -240,11 +245,18 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   // Verifie si le formulaire est valide
+  // Verifie si le formulaire est valide
   bool validateForm() {
-    bool isValid = EmailValidator.validate(emailController.text) &&
+    bool isValid = isValidPhoneNumber(phoneNumberController.text) &&
         passwordController.text.length >= 8;
+    debugPrint("Etat boutton connexion : $isValid");
     // Retourne true si le mail et le mot de passe respecte les conditions et non sinon
     return isValid;
+  }
+
+  bool isValidPhoneNumber(String phonenumber) {
+    RegExp regExp = RegExp(r'(^(?:[+0]9)?[0-9]{10}$)');
+    return regExp.hasMatch(phonenumber);
   }
 
   // Fonction de connexion de l'utilisateur
@@ -255,16 +267,17 @@ class _LoginFormState extends State<LoginForm> {
     SharedPreferences pref = await SharedPreferences.getInstance();
 
     try {
-      debugPrint("[_] Connexion de l'utilisateur ${emailController.text} ");
+      debugPrint(
+          "[_] Connexion de l'utilisateur ${phoneNumberController.text} ");
       // Requete vers l'API pour la connexion
       Response response = await post(Uri.parse(Api.login),
           body: jsonEncode(<String, String>{
-            "email": emailController.text,
+            "phone_number": phoneNumberController.text,
             "password": passwordController.text
           }),
           headers: {
             "Content-Type": "application/json",
-            "X-Api-Key": "ZmFiaW8gZGV2ZWxvcHBlZCB0aGlzIGFwaQ=="
+            "Authorization": "Api-Key RvUJpQNZ.YI8sE7iqoCR42Sw4MPjP3FGCiuoCu7Tt"
           });
 
       debugPrint("  --> Code de la reponse : [${response.statusCode}]");
@@ -275,13 +288,15 @@ class _LoginFormState extends State<LoginForm> {
 
         // Sauvegarde des données de l'utilisateur en local
         await pref.setString("tokens", response.body);
-        await pref.setString("user", emailController.text);
+        await pref.setString("user", phoneNumberController.text);
 
         // Vérification de la présence d'une double authentification
         var tokens = jsonDecode(response.body);
-        verifyDoubleAuthentication(tokens["access"]);
+        gotToInstructionsScreen(phoneNumberController.text);
+        //verifyDoubleAuthentication(tokens["access"]);
       } else {
-        debugPrint("[X] Connexion échoué : HTTP ${response.statusCode}");
+        debugPrint(
+            "[X] Connexion échoué : HTTP ${response.statusCode} ${response.body}");
         setState(() {
           // Arret du widget de chargement
           loading = false;
@@ -338,7 +353,7 @@ class _LoginFormState extends State<LoginForm> {
             loading = false;
           });
           debugPrint("[OK] Double authentification déactivé");
-          gotToInstructionsScreen(emailController.text);
+          gotToInstructionsScreen(phoneNumberController.text);
         }
       } else {
         setState(() {
@@ -384,7 +399,7 @@ class _LoginFormState extends State<LoginForm> {
         debugPrint(
             "[OK] Requete de demande de code pour la double authentification reussie avec succès");
 
-        goToDoubleAuthenticationScreen(token, emailController.text);
+        goToDoubleAuthenticationScreen(token, phoneNumberController.text);
       } else {
         debugPrint("[X] Vérification échoué : HTTP ${response.statusCode}");
 
@@ -405,7 +420,7 @@ class _LoginFormState extends State<LoginForm> {
   void goToDoubleAuthenticationScreen(String token, String email) {
     debugPrint(
         " Chargement de la page de validation de double authentification");
-    emailController.clear();
+    phoneNumberController.clear();
     passwordController.clear();
     Navigator.push(
         context,
@@ -418,7 +433,7 @@ class _LoginFormState extends State<LoginForm> {
 
   // Fonction de chargement de la page d'instruction'
   void gotToInstructionsScreen(String userEmail) {
-    emailController.clear();
+    phoneNumberController.clear();
     passwordController.clear();
 
     Navigator.pushAndRemoveUntil(

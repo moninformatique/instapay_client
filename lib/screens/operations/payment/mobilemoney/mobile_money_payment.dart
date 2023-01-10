@@ -217,7 +217,7 @@ class _MobileMoneyPaymentState extends State<MobileMoneyPayment> {
               height: 10,
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(onSurface: InstaColors.primary),
+              style: ElevatedButton.styleFrom(disabledForegroundColor: InstaColors.primary.withOpacity(0.38), disabledBackgroundColor: InstaColors.primary.withOpacity(0.12)),
               onPressed: () {
                 sendMoneyToSomeone();
               },
