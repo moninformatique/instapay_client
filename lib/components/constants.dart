@@ -17,7 +17,7 @@ class Api {
   static String domain = "http://164.92.134.116/api/v2";
 
   static String signup = "$domain/user/";
-  static String login = "$domain/user/";
+  static String login = "$domain/user/login/";
   static String logout = "$domain/user/logout/";
   static String activeAccount = "$domain/user/active_my_account/";
   static String doubleAuthentication =

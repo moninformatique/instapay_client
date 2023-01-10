@@ -128,6 +128,7 @@ class _RegisterFormState extends State<RegisterForm> {
                           // Champ du nom de l'utilisateur
                           TextFormField(
                             controller: lastNameController,
+                            textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
                               prefixIcon: Icon(Icons.person),
                               hintText: "Nom",
@@ -144,6 +145,7 @@ class _RegisterFormState extends State<RegisterForm> {
                           // Champ des prénoms de l'utilisateur
                           TextFormField(
                             controller: firstNameController,
+                            textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
                               prefixIcon: Icon(Icons.person),
                               hintText: "Prénoms",
@@ -161,9 +163,10 @@ class _RegisterFormState extends State<RegisterForm> {
                           TextFormField(
                             controller: phoneNumberController,
                             keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
                               prefixIcon: Icon(Icons.phone),
-                              hintText: "Contact",
+                              hintText: "Numéro de téléphone",
                             ),
                             validator: (phonenumber) {
                               return phonenumber != null &&
@@ -180,6 +183,7 @@ class _RegisterFormState extends State<RegisterForm> {
                             controller: passwordController,
                             obscureText: obscuretext,
                             keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
                               prefixIcon: const Icon(Icons.password),
                               suffixIcon: GestureDetector(
@@ -213,6 +217,7 @@ class _RegisterFormState extends State<RegisterForm> {
                             controller: confirmPasswordController,
                             obscureText: obscuretext,
                             keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.done,
                             decoration: const InputDecoration(
                               prefixIcon: Icon(Icons.lock),
                               hintText: "Confirmez mot de passe",
@@ -317,27 +322,6 @@ class _RegisterFormState extends State<RegisterForm> {
     ));
   }
 
-  // Boite de dialogue pour informer l'utilisateur de la reception d'un mail
-  Future openDialog(String email) => showDialog(
-      context: context,
-      builder: ((context) => AlertDialog(
-            content: Text(
-                "Un mail a été envoyé à l'addresse $email pour l'activation de votre compte. Veuillez activez votre compte pour vous connecter"),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => const Login()),
-                        (route) => true);
-                  },
-                  child: Text(
-                    "Bien compris",
-                    style: TextStyle(color: InstaColors.primary),
-                  ))
-            ],
-          )));
-
   // Inscription de l'utilisateur
   signUp() async {
     debugPrint("Exécution de la fonction d'inscription ...");
@@ -354,7 +338,7 @@ class _RegisterFormState extends State<RegisterForm> {
               "phone_number": phoneNumberController.text,
               "password": passwordController.text
             }),
-            headers: <String, String>{
+            headers: {
               "Content-Type": "application/json",
               "Authorization":
                   "Api-Key RvUJpQNZ.YI8sE7iqoCR42Sw4MPjP3FGCiuoCu7Tt"
@@ -367,21 +351,21 @@ class _RegisterFormState extends State<RegisterForm> {
           loading = false;
         });
 
-        if (response.statusCode == 200) {
+        if (response.statusCode == 201) {
           debugPrint("[OK] Inscription éffectué avec succès");
-          String phonenumber = phoneNumberController.text;
 
           // Efface les information dans les différents champ
           phoneNumberController.clear();
           firstNameController.clear();
           passwordController.clear();
           confirmPasswordController.clear();
-
-          // Envoie un message pour l'utilisateur
-          openDialog(phonenumber);
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const Login()),
+              (route) => true);
         } else {
           var result = jsonDecode(response.body.toString());
-          debugPrint("[X] ${result["erreur"]}");
+          debugPrint("[X] ${result["detail"]}");
 
           showInformation(context, false, "Ce compte existe déjà");
         }
