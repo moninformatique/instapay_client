@@ -112,7 +112,7 @@ class _MyAppState extends State<MyApp> {
           // Style des buttons ElevatedButton
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              primary: InstaColors.primary,
+              backgroundColor: InstaColors.primary,
               elevation: 0,
               //backgroundColor / primary (deprecié): ThemeColors.primary,
               shape: RoundedRectangleBorder(
@@ -139,6 +139,7 @@ class _MyAppState extends State<MyApp> {
 
       // Route générée
       onGenerateRoute: (RouteSettings settings) {
+        
         if (settings.name == PageRoutes.login) {
           return MaterialPageRoute(builder: (_) => const Login());
         } else {

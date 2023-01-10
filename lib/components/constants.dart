@@ -14,43 +14,44 @@ List<Map<String, dynamic>> providers = [
 
 // FONCTIONNALITÉS DE L'API
 class Api {
-  static String domain = "http://164.92.134.116/api/v1";
+  static String domain = "http://164.92.134.116/api/v2";
 
-  static String signup = "$domain/users/signup/";
-  static String login = "$domain/users/login/";
-  static String logout = "$domain/users/logout/";
-  static String activeAccount = "$domain/users/active_my_account/";
+  static String signup = "$domain/user/";
+  static String login = "$domain/user/";
+  static String logout = "$domain/user/logout/";
+  static String activeAccount = "$domain/user/active_my_account/";
   static String doubleAuthentication =
-      "$domain/users/login/second_authentication/";
+      "$domain/user/login/second_authentication/";
 
-  static String resetPasswordRequest = "$domain/users/ask_for_reset_password/";
-  static String resetPassword = "$domain/users/reset_password/";
-  static String changePassword = "$domain/users/change_password/";
-  static String changeUserInformations = "$domain/users/edit_profile/";
+  static String resetPasswordRequest = "$domain/user/ask_for_reset_password/";
+  static String resetPassword = "$domain/user/reset_password/";
+  static String changePassword = "$domain/user/change_password/";
+  static String changeUserInformations = "$domain/user/edit_profile/";
 
-  static String paymentRequest = "$domain/users/payment_request/";
-  static String sendMoney = "$domain/users/transactions/";
-  static String sendMoneyByClient = "$domain/users/transactionsFromClient/";
-  static String transactions = "$domain/users/transactions/";
+  static String paymentRequest = "$domain/user/payment_request/";
+  static String sendMoney = "$domain/user/transactions/";
+  static String sendMoneyByClient = "$domain/user/transactionsFromClient/";
+  static String transactions = "$domain/user/transactions/";
 
-  static String generateTransactionCode = "$domain/users/getTemporaryCode/";
+  static String generateTransactionCode = "$domain/user/getTemporaryCode/";
 
-  static String userProfil = "$domain/users/profil/";
-  static String userSecurity = "$domain/users/security/";
-  static String userAccount = "$domain/users/accounts/";
-  static String userInformations = "$domain/users/";
+  static String user = "$domain/user/";
+  static String userProfil = "$domain/user/profil/";
+  static String userSecurity = "$domain/user/security/";
+  static String userAccount = "$domain/user/accounts/";
+  static String userInformations = "$domain/user/";
 
   static String activeDoubleAuthentication =
-      "$domain/users/securityoption/?double_authentication=1";
+      "$domain/user/securityoption/?double_authentication=1";
   static String desactiveDoubleAuthentication =
-      "$domain/users/securityoption/?double_authentication=0";
+      "$domain/user/securityoption/?double_authentication=0";
 
   static String activeTransactionProtection =
-      "$domain/users/securityoption/?transaction_protection=1";
+      "$domain/user/securityoption/?transaction_protection=1";
   static String desactiveTransactionProtection =
-      "$domain/users/securityoption/?transaction_protection=0";
+      "$domain/user/securityoption/?transaction_protection=0";
 
-  static String addPaymentMethod = "$domain/users/addPaymentMethod/";
+  static String addPaymentMethod = "$domain/user/addPaymentMethod/";
 }
 
 // DIMENSIONS PADDING

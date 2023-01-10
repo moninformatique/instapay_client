@@ -127,7 +127,7 @@ class _PaymentWayState extends State<PaymentWay> {
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              onSurface: InstaColors.primary),
+                              disabledForegroundColor: InstaColors.primary.withOpacity(0.38), disabledBackgroundColor: InstaColors.primary.withOpacity(0.12)),
                           onPressed: (isSubmitEnable)
                               ? () {
                                   final isValidForm =

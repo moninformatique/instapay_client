@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
@@ -31,8 +30,9 @@ class _RegisterFormState extends State<RegisterForm> {
   bool loading = false;
   bool submit = false;
 
-  late TextEditingController fullNameController;
-  late TextEditingController emailController;
+  late TextEditingController firstNameController;
+  late TextEditingController lastNameController;
+  late TextEditingController phoneNumberController;
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
 
@@ -40,35 +40,24 @@ class _RegisterFormState extends State<RegisterForm> {
   @override
   void initState() {
     super.initState();
-    fullNameController = TextEditingController();
-    emailController = TextEditingController();
+    firstNameController = TextEditingController();
+    lastNameController = TextEditingController();
+    phoneNumberController = TextEditingController();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
 
-    // On ecoute le controlleur du champ nom de l'utilisateur
-    // à chaque modification du champ on indique si le bouton de soumission peut etre activer dans la variable submit
-    fullNameController.addListener(() {
-      setState(() {
-        submit =
-            validateForm(); // si le formulaire est valide, submit aura la valeur true
-      });
-    });
-
-    // La même chose pour le controller du champ de nom de l'utilisateur
-    emailController.addListener(() {
+    phoneNumberController.addListener(() {
       setState(() {
         submit = validateForm();
       });
     });
 
-    // La même chose pour le controller du champ de nom de l'utilisateur
     passwordController.addListener(() {
       setState(() {
         submit = validateForm();
       });
     });
 
-    // La même chose pour le controller du champ de nom de l'utilisateur
     confirmPasswordController.addListener(() {
       setState(() {
         submit = validateForm();
@@ -79,13 +68,9 @@ class _RegisterFormState extends State<RegisterForm> {
   // Dispose : Destruction des ressorces utilisées
   @override
   void dispose() {
-    fullNameController.clear();
-    emailController.clear();
-    passwordController.clear();
-    confirmPasswordController.clear();
-
-    fullNameController.dispose();
-    emailController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
+    phoneNumberController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
@@ -132,7 +117,7 @@ class _RegisterFormState extends State<RegisterForm> {
                       ),
                     ),
 
-                    SizedBox(height: InstaSpacing.big * 3),
+                    SizedBox(height: InstaSpacing.big * 2),
 
                     // Formulaire d'inscription
                     Form(
@@ -140,34 +125,50 @@ class _RegisterFormState extends State<RegisterForm> {
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Column(
                         children: [
-                          // Champ du nom d'utilisateur
+                          // Champ du nom de l'utilisateur
                           TextFormField(
-                            controller: fullNameController,
+                            controller: lastNameController,
                             decoration: const InputDecoration(
                               prefixIcon: Icon(Icons.person),
-                              hintText: "Nom complet",
+                              hintText: "Nom",
                             ),
-                            validator: (fullname) {
-                              return fullname != null && fullname.length < 5
-                                  ? "Nom complet trop court"
+                            validator: (lastname) {
+                              return lastname != null && lastname.length < 2
+                                  ? "Nom requis"
                                   : null;
                             },
                           ),
 
                           SizedBox(height: InstaSpacing.normal),
 
-                          // Champ de l'adresse mail
+                          // Champ des prénoms de l'utilisateur
                           TextFormField(
-                            controller: emailController,
-                            keyboardType: TextInputType.emailAddress,
+                            controller: firstNameController,
                             decoration: const InputDecoration(
-                              prefixIcon: Icon(Icons.alternate_email),
-                              hintText: "Email",
+                              prefixIcon: Icon(Icons.person),
+                              hintText: "Prénoms",
                             ),
-                            validator: (email) {
-                              return email != null &&
-                                      !EmailValidator.validate(email)
-                                  ? "Adresse mail invalide"
+                            validator: (firstname) {
+                              return firstname != null && firstname.length < 2
+                                  ? "Prénoms requis"
+                                  : null;
+                            },
+                          ),
+
+                          SizedBox(height: InstaSpacing.normal),
+
+                          // Champ du numéro de téléphone
+                          TextFormField(
+                            controller: phoneNumberController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.phone),
+                              hintText: "Contact",
+                            ),
+                            validator: (phonenumber) {
+                              return phonenumber != null &&
+                                      !isValidPhoneNumber(phonenumber)
+                                  ? "Numéro de téléphone invalide"
                                   : null;
                             },
                           ),
@@ -234,7 +235,11 @@ class _RegisterFormState extends State<RegisterForm> {
                               // Boutton inscripton
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                      onSurface: InstaColors.primary),
+                                      disabledForegroundColor:
+                                          InstaColors.primary.withOpacity(0.38),
+                                      disabledBackgroundColor: InstaColors
+                                          .primary
+                                          .withOpacity(0.12)),
                                   onPressed: submit
                                       ? () {
                                           final isValidForm =
@@ -267,8 +272,7 @@ class _RegisterFormState extends State<RegisterForm> {
 
   // Verifie si le formulaire est valide
   bool validateForm() {
-    bool isValid = EmailValidator.validate(emailController.text) &&
-        fullNameController.text.length >= 5 &&
+    bool isValid = isValidPhoneNumber(phoneNumberController.text) &&
         passwordController.text.length >= 8 &&
         confirmPasswordController.text.length >= 8;
     debugPrint("Etat boutton connexion : $isValid");
@@ -276,65 +280,9 @@ class _RegisterFormState extends State<RegisterForm> {
     return isValid;
   }
 
-  // Inscription de l'utilisateur
-  signUp() async {
-    debugPrint("Exécution de la fonction d'inscription ...");
-
-    if (passwordController.text == confirmPasswordController.text) {
-      try {
-        debugPrint("[_] Inscrition de l'utilisateur ${emailController.text}");
-        // Requete vers l'API pour l'inscription de l'utilisateur
-        Response response = await post(Uri.parse(Api.signup),
-            body: jsonEncode(<String, String>{
-              "full_name": fullNameController.text,
-              "email": emailController.text,
-              "password": passwordController.text,
-              "status": "client"
-            }),
-            headers: <String, String>{
-              "Content-Type": "application/json",
-              "X-Api-Key": "ZmFiaW8gZGV2ZWxvcHBlZCB0aGlzIGFwaQ=="
-            });
-
-        debugPrint("  --> Code de la reponse : [${response.statusCode}]");
-        debugPrint("  --> Contenue de la reponse : ${response.body}");
-
-        setState(() {
-          // Arret du widget de chargement
-          loading = false;
-        });
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          debugPrint("[OK] Inscription éffectué avec succès");
-          String email = emailController.text;
-
-          // Efface les information dans les différents champ
-          emailController.clear();
-          fullNameController.clear();
-          passwordController.clear();
-          confirmPasswordController.clear();
-
-          // Envoie un message pour l'utilisateur
-          openDialog(email);
-        } else {
-          var result = jsonDecode(response.body.toString());
-          debugPrint("[X] ${result["erreur"]}");
-
-          showInformation(context, false, "Ce compte existe déjà");
-        }
-      } catch (e) {
-        debugPrint("[X] Une erreur est survenue  \n $e");
-        setState(() {
-          // Arret du widget de chargement
-          loading = false;
-        });
-        showInformation(context, false, "Vérifiez votre connexion internet");
-      }
-    } else {
-      showInformation(context, false, "Mots de passe différents");
-      setState(() {
-        loading = false;
-      });
-    }
+  bool isValidPhoneNumber(String phonenumber) {
+    RegExp regExp = RegExp(r'(^(?:[+0]9)?[0-9]{10}$)');
+    return regExp.hasMatch(phonenumber);
   }
 
   // Affiche des informations en rapport avec les resultats des requetes à l'utilisateur
@@ -389,4 +337,66 @@ class _RegisterFormState extends State<RegisterForm> {
                   ))
             ],
           )));
+
+  // Inscription de l'utilisateur
+  signUp() async {
+    debugPrint("Exécution de la fonction d'inscription ...");
+
+    if (passwordController.text == confirmPasswordController.text) {
+      try {
+        debugPrint(
+            "[_] Inscrition de l'utilisateur ${phoneNumberController.text}");
+        // Requete vers l'API pour l'inscription de l'utilisateur
+        Response response = await post(Uri.parse(Api.signup),
+            body: jsonEncode(<String, String>{
+              "first_name": firstNameController.text,
+              "last_name": lastNameController.text,
+              "phone_number": phoneNumberController.text,
+              "password": passwordController.text
+            }),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Authorization":
+                  "Api-Key RvUJpQNZ.YI8sE7iqoCR42Sw4MPjP3FGCiuoCu7Tt"
+            });
+
+        debugPrint("  --> Code de la reponse : [${response.statusCode}]");
+        debugPrint("  --> Contenue de la reponse : ${response.body}");
+
+        setState(() {
+          loading = false;
+        });
+
+        if (response.statusCode == 200) {
+          debugPrint("[OK] Inscription éffectué avec succès");
+          String phonenumber = phoneNumberController.text;
+
+          // Efface les information dans les différents champ
+          phoneNumberController.clear();
+          firstNameController.clear();
+          passwordController.clear();
+          confirmPasswordController.clear();
+
+          // Envoie un message pour l'utilisateur
+          openDialog(phonenumber);
+        } else {
+          var result = jsonDecode(response.body.toString());
+          debugPrint("[X] ${result["erreur"]}");
+
+          showInformation(context, false, "Ce compte existe déjà");
+        }
+      } catch (e) {
+        debugPrint("[X] Une erreur est survenue  \n $e");
+        setState(() {
+          loading = false;
+        });
+        showInformation(context, false, "Une erreur est survenue");
+      }
+    } else {
+      showInformation(context, false, "Mots de passe différents");
+      setState(() {
+        loading = false;
+      });
+    }
+  }
 }

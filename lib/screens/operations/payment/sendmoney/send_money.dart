@@ -343,7 +343,7 @@ class _SendMoneyState extends State<SendMoney> {
                 // Boutton de connexion
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        onSurface: InstaColors.primary),
+                        disabledForegroundColor: InstaColors.primary.withOpacity(0.38), disabledBackgroundColor: InstaColors.primary.withOpacity(0.12)),
                     onPressed: (submit)
                         ? () async {
                             final isValidForm =

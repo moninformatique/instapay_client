@@ -186,7 +186,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               // Boutton de validation
               ElevatedButton(
                   style:
-                      ElevatedButton.styleFrom(onSurface: InstaColors.primary),
+                      ElevatedButton.styleFrom(disabledForegroundColor: InstaColors.primary.withOpacity(0.38), disabledBackgroundColor: InstaColors.primary.withOpacity(0.12)),
                   onPressed: (submit1)
                       ? () async {
                           final isValidForm = formKey.currentState!.validate();
@@ -243,7 +243,7 @@ class _ResetPasswordState extends State<ResetPassword> {
           // Boutton de retour
           ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey.shade500,
+                backgroundColor: Colors.grey.shade500,
               ),
               onPressed: () {
                 Navigator.pop(context);
@@ -329,7 +329,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                 )
               : ElevatedButton(
                   style:
-                      ElevatedButton.styleFrom(onSurface: InstaColors.primary),
+                      ElevatedButton.styleFrom(disabledForegroundColor: InstaColors.primary.withOpacity(0.38), disabledBackgroundColor: InstaColors.primary.withOpacity(0.12)),
                   onPressed: (submit2)
                       ? () async {
                           final isValidForm = formKey2.currentState!.validate();
@@ -401,7 +401,7 @@ class _ResetPasswordState extends State<ResetPassword> {
           // Boutton de retour
           ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey.shade500,
+                backgroundColor: Colors.grey.shade500,
               ),
               onPressed: () {
                 setState(() {

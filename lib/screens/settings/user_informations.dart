@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import '../errors/invalid_token.dart';
 import './../../components/constants.dart';
-import '../../components/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserInformationProfile extends StatefulWidget {
